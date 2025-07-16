@@ -92,6 +92,33 @@ const accountController = {
       return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
     }
   },
+  resetPassword: async (req, res) => {
+    try {
+      const { token } = req.params
+      const { password } = req.body
+
+      const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+      const account = await AccountsModels.findOne({
+        resetPasswordToken: hashedToken,
+        resetPasswordExpire: { $gt: Date.now() } // Kiểm tra token còn hiệu lực
+      });
+
+      if (!account) {
+        return res.status(400).json({ message: 'Token không hợp lệ hoặc đã hết hạn.' });
+      }
+
+      account.password = await bcrypt.hash(password, 10); // Mã hóa mật khẩu mới
+      account.resetPasswordToken = undefined; // Xóa token reset
+      account.resetPasswordExpire = undefined; // Xóa thời gian hết hạn
+
+      await account.save();
+
+      return res.status(200).json({ message: 'Mật khẩu đã được đặt lại thành công.' });
+    } catch (error) {
+      return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
+    }
+  },
   login: async (req, res) => {
     try {
       const account = req.account; // Lấy account từ middleware validateLogin
