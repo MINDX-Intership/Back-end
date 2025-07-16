@@ -1,20 +1,27 @@
 import nodemailer from 'nodemailer';
+import 'dotenv/config'
 
-export const sendVerificationEmail = async (to, subject, html) => {
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: process.env.SMTP_PORT,
-    secure: false,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS
-    }
-  });
+const transporter = nodemailer.createTransport({
+  service: 'Gmail',
+  auth: {
+    user: process.env.GMAIL_USER,
+    password: process.env.GMAIL_PASSWORD
+  }
+})
 
-  await transporter.sendMail({
-    from: `"Task System" <${process.env.SMTP_USER}>`,
+export const sendVerifyEmail = async (to, token) => {
+  const verifyUrl = `${process.env.CLIENT_URL}/verify-email/${token}`;
+  
+  const mailOptions = {
+    from: process.env.GMAIL_USER,
     to,
-    subject,
-    html
-  });
-};
+    subject: 'Xác thực tài khoản',
+    html: `
+      <p>Hãy vui lòng ấn vào đường link phía dưới để xác thực tài khoản</p>
+      <p><a href='${verifyUrl}'>Link</a></p>
+      <p>Đường link này sẽ hết hạn sau 1 tiếng</p>
+    `
+  }
+
+  await transporter.sendMail(mailOptions)
+}
