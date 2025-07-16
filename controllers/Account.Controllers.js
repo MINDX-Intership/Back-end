@@ -1,57 +1,8 @@
-// import jwt from 'jsonwebtoken';
-// import Account from '../models/Accounts.Models.js';
-// import { sendVerificationEmail } from '../utils/sendEmail.js';
-
-// export const register = async (req, res) => {
-//   const { email, password, role } = req.body;
-
-//   try {
-//     const newAccount = await Account.create({
-//       email,
-//       password,
-//       role,
-//       active: true,
-//       isVerified: false
-//     });
-
-//     const token = jwt.sign(
-//       { accountId: newAccount._id },
-//       process.env.JWT_SECRET,
-//       { expiresIn: process.env.JWT_EXPIRE }
-//     );
-
-//     const link = `${process.env.CLIENT_URL}/verify-email?token=${token}`;
-//     const html = `<h3>Xác thực tài khoản</h3><a href="${link}">${link}</a>`;
-
-//     await sendVerificationEmail(email, 'Xác thực tài khoản', html);
-
-//     res.status(201).json({ message: 'Vui lòng kiểm tra email để xác thực.' });
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// };
-
-// export const verifyEmail = async (req, res) => {
-//   const { token } = req.query;
-
-//   try {
-//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-//     const account = await Account.findById(decoded.accountId);
-
-//     if (!account) return res.status(404).json({ error: 'Không tìm thấy tài khoản.' });
-//     if (account.isVerified) return res.json({ message: 'Tài khoản đã được xác thực.' });
-
-//     account.isVerified = true;
-//     await account.save();
-
-//     res.json({ message: 'Xác thực thành công!' });
-//   } catch (err) {
-//     res.status(400).json({ error: 'Token không hợp lệ hoặc đã hết hạn.' });
-//   }
-// };
-
-
 import AccountsModels from "../models/Accounts.Models.js"
+import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
+import { sendResetPasswordEmail, sendVerifyEmail } from '../utils/sendEmail.js';
 
 const accountController = {
   register: async (req, res) => {
@@ -73,7 +24,7 @@ const accountController = {
         return res.status(400).json({ message: 'Email đã được sử dụng.' });
       }
 
-      const hashPassword = await bcrypt.hash(password, 10);
+      const hashPassword = await bcrypt.hash(password, 10); //hash mật khẩu
 
       // Tạo tài khoản mới
       const newAccount = await AccountsModels.create({
@@ -87,11 +38,93 @@ const accountController = {
       res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
     }
   },
-  login: async (req, res) => {
+  verifyEmail: async (req, res) => {
+    try {
+      const { email } = req.body
+      console.log('Email cần xác thực:', email);
 
+      const account = await AccountsModels.findOne({ email });
+      if (!account) {
+        console.log('Tài khoản không tồn tại:', email);
+        return res.status(404).json({ message: 'Tài khoản không tồn tại.' });
+      }
+
+      const token = crypto.randomBytes(32).toString('hex'); // Tạo token xác thực
+      const hash = crypto.createHash('sha256').update(token).digest('hex');
+
+      account.verifyToken = hash
+      account.verifyTokenExpire = Date.now() + 3600000; // Token hết hạn sau 1 giờ
+
+      await account.save();
+
+      await sendVerifyEmail(email, token); // Gửi email xác thực
+
+      return res.status(200).json({ message: 'Vui lòng kiểm tra email để xác thực tài khoản.' });
+    } catch (error) {
+      return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
+    }
+  },
+  forgotPassword: async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Vui lòng cung cấp email.' });
+    }
+
+    try {
+      const account = await AccountsModels.findOne({ email });
+      if (!account) {
+        return res.status(404).json({ message: 'Tài khoản không tồn tại.' });
+      }
+
+      const token = crypto.randomBytes(32).toString('hex');
+      const hash = crypto.createHash('sha256').update(token).digest('hex');
+
+      account.resetPasswordToken = hash;
+      account.resetPasswordExpire = Date.now() + 3600000; // Token hết hạn sau 1 giờ
+
+      await account.save();
+
+      await sendResetPasswordEmail(email, token); // Gửi email đặt lại mật khẩu
+
+      return res.status(200).json({ message: 'Vui lòng kiểm tra email để đặt lại mật khẩu.' });
+    } catch (error) {
+      return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
+    }
+  },
+  login: async (req, res) => {
+    try {
+      const account = req.account; // Lấy account từ middleware validateLogin
+
+      const jwtToken = jwt.sign({
+        id: account._id,
+        email: account.email,
+        role: account.role
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: process.env.JWT_EXPIRE
+      });
+
+      return res.status(200).json({
+        message: 'Đăng nhập thành công',
+        token: jwtToken,
+        account: {
+          email: account.email,
+          role: account.role
+        }
+      });
+    } catch (error) {
+      return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
+    }
   },
   getAccount: async (req, res) => {
-    
+    try {
+      const account = await AccountsModels.find()
+      return res.status(200).json(account);
+    } catch (error) {
+      return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
+    }
   }
 }
 
