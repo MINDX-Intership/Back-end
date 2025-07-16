@@ -15,9 +15,10 @@ const taskSchema = new mongoose.Schema({
     default: 'NOTSTARTED',
     required: true
   },
-  duration: Number,
-  docTransfer: String,
+  duration: { type: Number }, // thời gian thực hiện tính bằng giờ
+  docTransfer: { type: String }, // đường dẫn tài liệu đính kèm
   createdAt: { type: Date, default: Date.now }
 });
 
-export default mongoose.model('Task', taskSchema);
+const taskModel = mongoose.model('Task', taskSchema);
+export default taskModel

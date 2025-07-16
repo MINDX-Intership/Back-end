@@ -2,9 +2,10 @@ import mongoose from 'mongoose';
 
 const jobPositionSchema = new mongoose.Schema({
   title: { type: String, required: true },    // tên chức vụ
-  code: { type: String, required: true },     // mã chức vụ
+  code: { type: String, required: true, unique: true },     // mã chức vụ
   describe: { type: String },
   active: { type: Boolean, default: true }
 });
 
-export default mongoose.model('JobPosition', jobPositionSchema);
+const jobPositionModel = mongoose.model('JobPosition', jobPositionSchema);
+export default jobPositionModel

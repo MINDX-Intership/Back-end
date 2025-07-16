@@ -8,4 +8,5 @@ const accountSchema = new mongoose.Schema({
   isVerified: { type: Boolean, default: false }                 //  xác thực email
 });
 
-export default mongoose.model('Account', accountSchema);
+const accountModel = mongoose.model('Accounts', accountSchema);
+export default accountModel

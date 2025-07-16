@@ -8,4 +8,5 @@ const sprintSchema = new mongoose.Schema({
   endDate: { type: Date, required: true }
 });
 
-export default mongoose.model('Sprint', sprintSchema);
+const sprintModel = mongoose.model('Sprint', sprintSchema);
+export default sprintModel

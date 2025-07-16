@@ -10,4 +10,5 @@ const courseSchema = new mongoose.Schema({
   active: { type: Boolean, default: true }
 });
 
-export default mongoose.model('Course', courseSchema);
+const courseModel = mongoose.model('Courses', courseSchema);
+export default courseModel
