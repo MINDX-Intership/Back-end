@@ -1,24 +1,17 @@
 import express from 'express';
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
+import 'dotenv/config'
 import cors from 'cors';
-
-import authRoutes from './routes/auth.js';
-
-import authRoutes from './routes/auth.js';
-import userRoutes from './routes/user.js';
-
-dotenv.config();
+import rootRouter from './routes';
 
 const app = express();
 
-app.use(cors());
 app.use(express.json());
-app.use('/api/auth', authRoutes);
-app.use('/api/user', userRoutes);
+app.use(cors());
+
 
 // Routes
-app.use('/api/auth', authRoutes);
+app.use('/api', rootRouter);
 
 // Kết nối MongoDB và chạy server
 mongoose.connect(process.env.MONGODB_URI)
