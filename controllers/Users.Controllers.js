@@ -1,5 +1,257 @@
-import userModel from "../models/Users.Models";
+import userModel from "../models/Users.Models.js";
 
 const userController = {
-    getUser: async (req, res) => {}
+    // Get current user's profile
+    getMyProfile: async (req, res) => {
+        try {
+            const accountId = req.account._id; // From authVerify middleware
+            console.log('Account ID from token:', accountId);
+            
+            const user = await userModel.findOne({ accountId })
+                .populate('departs', 'name') // Populate department name
+                .populate('jobPosition', 'title'); // Populate job position title
+            
+            console.log('User found:', user);
+            
+            if (!user) {
+                return res.status(404).json({ 
+                    message: 'Không tìm thấy thông tin người dùng. Vui lòng tạo profile trước.',
+                    accountId: accountId.toString(),
+                    suggestion: 'Sử dụng POST /api/users/create-profile để tạo profile mới'
+                });
+            }
+            
+            return res.status(200).json({
+                message: 'Lấy thông tin người dùng thành công',
+                user: user
+            });
+        } catch (error) {
+            console.error('Error in getMyProfile:', error);
+            return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
+        }
+    },
+
+    // Create user profile for the first time
+    createMyProfile: async (req, res) => {
+        try {
+            const accountId = req.account._id; // From authVerify middleware
+            const { personalEmail, companyEmail, name, phoneNumber, dob, departs, jobPosition } = req.body;
+            
+            // Check if user profile already exists
+            const existingUser = await userModel.findOne({ accountId });
+            if (existingUser) {
+                return res.status(400).json({ message: 'Profile đã tồn tại. Sử dụng PUT để cập nhật.' });
+            }
+            
+            // Validate required fields
+            if (!personalEmail || !name || !phoneNumber || !dob) {
+                return res.status(400).json({ 
+                    message: 'Vui lòng điền đầy đủ thông tin bắt buộc: personalEmail, name, phoneNumber, dob' 
+                });
+            }
+            
+            // Check email uniqueness
+            const existingEmailUser = await userModel.findOne({ personalEmail });
+            if (existingEmailUser) {
+                return res.status(400).json({ message: 'Email cá nhân đã được sử dụng.' });
+            }
+            
+            if (companyEmail) {
+                const existingCompanyEmailUser = await userModel.findOne({ companyEmail });
+                if (existingCompanyEmailUser) {
+                    return res.status(400).json({ message: 'Email công ty đã được sử dụng.' });
+                }
+            }
+            
+            // Create new user profile
+            const newUser = await userModel.create({
+                accountId,
+                personalEmail,
+                companyEmail,
+                name,
+                phoneNumber,
+                dob: new Date(dob),
+                departs: departs || [],
+                jobPosition: jobPosition || [],
+                roleTag: 'MEMBER' // Default role
+            });
+            
+            const populatedUser = await userModel.findById(newUser._id)
+                .populate('departs', 'name')
+                .populate('jobPosition', 'title');
+            
+            return res.status(201).json({
+                message: 'Tạo profile thành công',
+                user: populatedUser
+            });
+            
+        } catch (error) {
+            console.error('Error in createMyProfile:', error);
+            return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
+        }
+    },
+
+    // Update current user's personal data
+    updateMyProfile: async (req, res) => {
+        try {
+            const accountId = req.account._id; // From authVerify middleware
+            const { personalEmail, companyEmail, name, phoneNumber, dob } = req.body;
+            
+            // Find the user by their account ID
+            const user = await userModel.findOne({ accountId });
+            
+            if (!user) {
+                return res.status(404).json({ message: 'Không tìm thấy thông tin người dùng.' });
+            }
+            
+            // Validate email uniqueness if personalEmail is being updated
+            if (personalEmail && personalEmail !== user.personalEmail) {
+                const existingUser = await userModel.findOne({ 
+                    personalEmail, 
+                    _id: { $ne: user._id } 
+                });
+                if (existingUser) {
+                    return res.status(400).json({ message: 'Email cá nhân đã được sử dụng.' });
+                }
+            }
+            
+            // Validate company email uniqueness if companyEmail is being updated
+            if (companyEmail && companyEmail !== user.companyEmail) {
+                const existingUser = await userModel.findOne({ 
+                    companyEmail, 
+                    _id: { $ne: user._id } 
+                });
+                if (existingUser) {
+                    return res.status(400).json({ message: 'Email công ty đã được sử dụng.' });
+                }
+            }
+            
+            // Update only the fields that are provided
+            const updateData = {};
+            if (personalEmail) updateData.personalEmail = personalEmail;
+            if (companyEmail) updateData.companyEmail = companyEmail;
+            if (name) updateData.name = name;
+            if (phoneNumber) updateData.phoneNumber = phoneNumber;
+            if (dob) updateData.dob = new Date(dob);
+            
+            const updatedUser = await userModel.findOneAndUpdate(
+                { accountId }, // Only update user with this account ID
+                updateData,
+                { new: true, runValidators: true }
+            ).populate('departs', 'name').populate('jobPosition', 'title');
+            
+            return res.status(200).json({
+                message: 'Cập nhật thông tin cá nhân thành công',
+                user: updatedUser
+            });
+            
+        } catch (error) {
+            return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
+        }
+    },
+
+    // Admin only - get all users
+    getAllUsers: async (req, res) => {
+        try {
+            const users = await userModel.find({ active: true })
+                .populate('accountId', 'email role active')
+                .populate('departs', 'name')
+                .populate('jobPosition', 'title');
+            
+            return res.status(200).json({
+                message: 'Lấy danh sách người dùng thành công',
+                users: users
+            });
+        } catch (error) {
+            return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
+        }
+    },
+
+    // Admin only - get user by ID
+    getUserById: async (req, res) => {
+        try {
+            const { userId } = req.params;
+            
+            const user = await userModel.findById(userId)
+                .populate('accountId', 'email role active')
+                .populate('departs', 'name')
+                .populate('jobPosition', 'title');
+            
+            if (!user) {
+                return res.status(404).json({ message: 'Không tìm thấy người dùng.' });
+            }
+            
+            return res.status(200).json({
+                message: 'Lấy thông tin người dùng thành công',
+                user: user
+            });
+        } catch (error) {
+            return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
+        }
+    },
+
+    // Admin only - update user by ID
+    updateUserById: async (req, res) => {
+        try {
+            const { userId } = req.params;
+            const { personalEmail, companyEmail, name, phoneNumber, dob, departs, jobPosition, roleTag } = req.body;
+            
+            const user = await userModel.findById(userId);
+            
+            if (!user) {
+                return res.status(404).json({ message: 'Không tìm thấy người dùng.' });
+            }
+            
+            // Validate email uniqueness if personalEmail is being updated
+            if (personalEmail && personalEmail !== user.personalEmail) {
+                const existingUser = await userModel.findOne({ 
+                    personalEmail, 
+                    _id: { $ne: userId } 
+                });
+                if (existingUser) {
+                    return res.status(400).json({ message: 'Email cá nhân đã được sử dụng.' });
+                }
+            }
+            
+            // Validate company email uniqueness if companyEmail is being updated
+            if (companyEmail && companyEmail !== user.companyEmail) {
+                const existingUser = await userModel.findOne({ 
+                    companyEmail, 
+                    _id: { $ne: userId } 
+                });
+                if (existingUser) {
+                    return res.status(400).json({ message: 'Email công ty đã được sử dụng.' });
+                }
+            }
+            
+            // Update only the fields that are provided
+            const updateData = {};
+            if (personalEmail) updateData.personalEmail = personalEmail;
+            if (companyEmail) updateData.companyEmail = companyEmail;
+            if (name) updateData.name = name;
+            if (phoneNumber) updateData.phoneNumber = phoneNumber;
+            if (dob) updateData.dob = new Date(dob);
+            if (departs) updateData.departs = departs;
+            if (jobPosition) updateData.jobPosition = jobPosition;
+            if (roleTag) updateData.roleTag = roleTag;
+            
+            const updatedUser = await userModel.findByIdAndUpdate(
+                userId,
+                updateData,
+                { new: true, runValidators: true }
+            ).populate('accountId', 'email role active')
+             .populate('departs', 'name')
+             .populate('jobPosition', 'title');
+            
+            return res.status(200).json({
+                message: 'Cập nhật thông tin người dùng thành công',
+                user: updatedUser
+            });
+            
+        } catch (error) {
+            return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
+        }
+    }
 }
+
+export default userController;
