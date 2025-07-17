@@ -44,6 +44,14 @@ export const validateLogin = async (req, res, next) => { // kiểm tra dữ li�
             return res.status(400).json({ message: 'Mật khẩu không đúng' });
         }
 
+        // Check if account is verified
+        if (!account.isVerified) {
+            return res.status(403).json({ 
+                message: 'Tài khoản chưa được xác thực. Vui lòng kiểm tra email để xác thực tài khoản.',
+                needsVerification: true
+            });
+        }
+
         req.account = account; // gắn account vào request để sử dụng ở controller
         next();
     } catch (error) {

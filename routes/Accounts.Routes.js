@@ -4,8 +4,9 @@ import { registerValidate, validateLogin, authVerify } from '../middlewares/Auth
 
 const accountRouter = express.Router();
 
-accountRouter.post('/register', registerValidate, accountController.register);       // Đăng ký & gửi email
-accountRouter.post('/verify-email/:token', accountController.verifyEmail); // Xác thực từ email link
+accountRouter.post('/register', registerValidate, accountController.register);       // Đăng ký tài khoản
+accountRouter.post('/send-verification', accountController.verifyEmail);            // Gửi email xác thực
+accountRouter.get('/verify-email/:token', accountController.confirmEmailVerification); // Xác thực email từ link
 accountRouter.post('/login', validateLogin, accountController.login);             // Đăng nhập
 accountRouter.post('/forgot-password', accountController.forgotPassword); // Quên mật khẩu
 accountRouter.post('/reset-password/:token', accountController.resetPassword); // Đặt lại mật khẩu
