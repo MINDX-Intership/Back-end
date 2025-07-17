@@ -109,6 +109,20 @@ export const authVerify = async (req, res, next) => {
     }
 }
 
+export const authLeader = async (req, res, next) => { // phân quyền theo role leader
+    try {
+        if (!req.user) return res.status(401).json({ message: 'Truy cập bị từ chối' });
+
+        if (!req.user.role || req.user.role !== 'LEADER') {
+            return res.status(403).json({ message: 'Bạn không có quyền truy cập chức năng này.' });
+        }
+
+        next()
+    } catch (error) {
+        return res.status(500).json({ message: 'internal server error' || error.message });
+    }
+}
+
 export const authAdmin = async (req, res, next) => { // phân quyền theo role admin
     try {
         if (!req.user) return res.status(401).json({ message: 'Truy cập bị từ chối' });
