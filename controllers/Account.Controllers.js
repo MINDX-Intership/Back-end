@@ -64,6 +64,44 @@ const accountController = {
       return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
     }
   },
+  confirmEmailVerification: async (req, res) => {
+    try {
+      const { token } = req.params; // Token từ URL params
+      
+      if (!token) {
+        return res.status(400).json({ message: 'Token xác thực không hợp lệ.' });
+      }
+
+      // Hash token từ URL để so sánh với token đã lưu
+      const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+      const account = await AccountsModels.findOne({
+        verifyToken: hashedToken,
+        verifyTokenExpire: { $gt: Date.now() } // Kiểm tra token còn hiệu lực
+      });
+
+      if (!account) {
+        return res.status(400).json({ message: 'Token không hợp lệ hoặc đã hết hạn.' });
+      }
+
+      // Xác thực tài khoản
+      account.isVerified = true;
+      account.verifyToken = undefined; // Xóa token xác thực
+      account.verifyTokenExpire = undefined; // Xóa thời gian hết hạn
+
+      await account.save();
+
+      return res.status(200).json({ 
+        message: 'Xác thực email thành công! Bạn có thể đăng nhập ngay bây giờ.',
+        account: {
+          email: account.email,
+          isVerified: account.isVerified
+        }
+      });
+    } catch (error) {
+      return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
+    }
+  },
   forgotPassword: async (req, res) => {
     const { email } = req.body;
 
