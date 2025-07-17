@@ -124,7 +124,7 @@ const accountController = {
       const account = req.account; // Lấy account từ middleware validateLogin
 
       const jwtToken = jwt.sign({
-        id: account._id,
+        accountId: account._id,  // Changed from 'id' to 'accountId' to match authVerify middleware
         email: account.email,
         role: account.role
       },
