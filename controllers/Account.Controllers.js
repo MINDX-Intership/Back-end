@@ -1,5 +1,5 @@
 import AccountsModels from "../models/Accounts.Models.js"
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { sendResetPasswordEmail, sendVerifyEmail } from '../utils/sendEmail.js';
@@ -29,11 +29,11 @@ const accountController = {
       // Tạo tài khoản mới
       const newAccount = await AccountsModels.create({
         email,
-        password,
+        password: hashPassword,
         isVerified: false // Mặc định chưa xác thực
       });
 
-      res.status(201).json({ message: 'Tài khoản đã được tạo. Vui lòng xác thực email.' });
+      res.status(201).json({ message: 'Tài khoản đã được tạo. Vui lòng xác thực email.', account: newAccount });
     } catch (error) {
       res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
     }

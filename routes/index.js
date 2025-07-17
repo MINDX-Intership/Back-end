@@ -1,5 +1,5 @@
-import accountRouter from "./Accounts.Routes";
-import userRouter from "./Users.Routes";
+import accountRouter from "./Accounts.Routes.js";
+import userRouter from "./Users.Routes.js";
 import { Router } from "express";
 
 const rootRouter = Router();

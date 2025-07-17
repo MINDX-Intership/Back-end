@@ -1,6 +1,6 @@
 import AccountsModels from "../models/Accounts.Models.js";
 import jwt from 'jsonwebtoken'
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 
 export const registerValidate = async (req, res, next) => { // kiểm tra dữ liệu đăng ký
     try {
@@ -11,11 +11,6 @@ export const registerValidate = async (req, res, next) => { // kiểm tra dữ l
 
         if (password !== confirmPassword) {
             return res.status(400).json({ message: 'Mật khẩu không khớp.' });
-        }
-
-        const existingAccount = await AccountsModels.findOne({ email })
-        if (existingAccount) {
-            return res.status(400).json({ message: 'Email đã được sử dụng.' });
         }
 
         const emailRegex = /^[\w.+-]+@gmail\.com$/
@@ -102,6 +97,8 @@ export const authLeader = async (req, res, next) => { // phân quyền theo role
         if (!req.user.role || req.user.role !== 'LEADER') {
             return res.status(403).json({ message: 'Bạn không có quyền truy cập chức năng này.' });
         }
+
+        next()
     } catch (error) {
         return res.status(500).json({ message: 'internal server error' || error.message });
     }
@@ -114,6 +111,8 @@ export const authAdmin = async (req, res, next) => { // phân quyền theo role 
         if (!req.user.role || req.user.role !== 'ADMIN') {
             return res.status(403).json({ message: 'Bạn không có quyền truy cập chức năng này.' });
         }
+
+        next()
     } catch (error) {
         return res.status(500).json({ message: 'internal server error' || error.message });
     }
