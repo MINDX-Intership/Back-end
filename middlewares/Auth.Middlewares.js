@@ -25,9 +25,11 @@ export const isStaff = (req, res, next) => {
 export const registerValidate = async (req, res, next) => {
     try {
         const { email, password, confirmPassword } = req.body
-        if (!email || !password || !confirmPassword) {
-            return res.status(400).json({ message: 'Vui lòng điền đầy đủ thông tin.' });
-        }
+
+        if (!email) return res.status(400).json({ message: 'Vui lòng nhập email.' });
+        if (!password) return res.status(400).json({ message: 'Vui lòng nhập mật khẩu.' });
+        if (!confirmPassword) return res.status(400).json({ message: 'Vui lòng nhập lại mật khẩu.' });
+        if (password.length < 8) return res.status(400).json({ message: 'Mật khẩu cần có ít nhất 8 kí tự.' });
 
         if (password !== confirmPassword) {
             return res.status(400).json({ message: 'Mật khẩu không khớp.' });

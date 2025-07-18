@@ -7,5 +7,5 @@ const jobPositionSchema = new mongoose.Schema({
   active: { type: Boolean, default: true }
 });
 
-const jobPositionModel = mongoose.model('JobPosition', jobPositionSchema);
+const jobPositionModel = mongoose.model('JobPositions', jobPositionSchema);
 export default jobPositionModel
