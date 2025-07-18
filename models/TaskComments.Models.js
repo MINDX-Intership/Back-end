@@ -8,5 +8,5 @@ const taskCommentSchema = new mongoose.Schema({
   replyComment: { type: mongoose.Schema.Types.ObjectId, ref: 'TaskComment' } // phản hồi bình luận
 });
 
-const taskCommentModel = mongoose.model('TaskComment', taskCommentSchema);
+const taskCommentModel = mongoose.model('TaskComments', taskCommentSchema);
 export default taskCommentModel

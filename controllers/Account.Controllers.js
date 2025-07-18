@@ -8,15 +8,6 @@ const accountController = {
   register: async (req, res) => {
     const { email, password, confirmPassword } = req.body;
 
-    // Kiểm tra dữ liệu đầu vào
-    if (!email || !password || !confirmPassword) {
-      return res.status(400).json({ message: 'Vui lòng điền đầy đủ thông tin.' });
-    }
-
-    if (password !== confirmPassword) {
-      return res.status(400).json({ message: 'Mật khẩu không khớp.' });
-    }
-
     try {
       // Kiểm tra xem email đã tồn tại chưa
       const existingAccount = await AccountsModels.findOne({ email });
