@@ -1,4 +1,3 @@
-import { get } from "mongoose";
 import departModel from "../models/Departs.Models";
 
 const departController = {
