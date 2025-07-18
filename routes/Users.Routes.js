@@ -1,4 +1,5 @@
 import express from 'express';
+import userController from '../controllers/Users.Controllers.js';
 // import { protect, authorize } from '../middlewares/Auth.Middlewares.js';
 
 const userRouter = express.Router();
@@ -11,6 +12,13 @@ const userRouter = express.Router();
 //     verified: req.account.isVerified
 //   });
 // });
+
+// Lấy thông tin cá nhân
+userRouter.get('/me', authenticateToken, userController.getUser);
+
+// Cập nhật thông tin cá nhân
+userRouter.put('/me', authenticateToken, userController.updateUser);
+
 
 // // route role cho admin
 // userRouter.get('/admin-only', protect, authorize('ADMIN'), (req, res) => {
