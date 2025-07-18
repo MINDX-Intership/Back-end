@@ -1,14 +1,14 @@
 import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
-  accountId: { type: mongoose.Schema.Types.ObjectId, ref: 'Account', required: true },
-  departs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Depart', required: true }], // danh sách phòng ban
-  jobPosition: [{ type: mongoose.Schema.Types.ObjectId, ref: 'JobPosition', required: true }], // danh sách chức vụ
+  accountId: { type: mongoose.Schema.Types.ObjectId, ref: 'Accounts', required: true },
+  departs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Departs' }], // danh sách phòng ban - fixed ref name
+  jobPosition: [{ type: mongoose.Schema.Types.ObjectId, ref: 'JobPosition' }], // danh sách chức vụ - matches JobPositions model
 
   personalEmail: { type: String, unique: true, required: true },
   companyEmail: { type: String, unique: true },
   name: { type: String, required: true},
-  roleTag: { type: String, enum: ['LEADER', 'MEMBER', 'ADMIN'], default: 'MEMBER', required: true }, // phân quyền người dùng
+  roleTag: { type: String, enum: ['LEADER', 'MEMBER', 'ADMIN'], default: 'MEMBER' }, // phân quyền người dùng
   phoneNumber: { type: String, required: true},
   dob: { type: Date, required: true },
   active: { type: Boolean, default: true }

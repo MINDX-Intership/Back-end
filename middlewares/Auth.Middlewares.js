@@ -64,7 +64,16 @@ export const validateLogin = async (req, res, next) => {
             return res.status(400).json({ message: 'Mật khẩu không đúng' });
         }
 
-        req.account = account;
+      // Check if account is verified
+        if (!account.isVerified) {
+            return res.status(403).json({ 
+                message: 'Tài khoản chưa được xác thực. Vui lòng kiểm tra email để xác thực tài khoản.',
+                needsVerification: true
+            });
+        }
+
+        req.account = account; // gắn account vào request để sử dụng ở controller
+      
         next();
     } catch (error) {
         return res.status(500).json({ message: 'Internal server error' || error.message });
@@ -106,6 +115,20 @@ export const authVerify = async (req, res, next) => {
         } else {
             return res.status(500).json({ message: 'internal server error' || error.message });
         }
+    }
+}
+
+export const authLeader = async (req, res, next) => { // phân quyền theo role leader
+    try {
+        if (!req.user) return res.status(401).json({ message: 'Truy cập bị từ chối' });
+
+        if (!req.user.role || req.user.role !== 'LEADER') {
+            return res.status(403).json({ message: 'Bạn không có quyền truy cập chức năng này.' });
+        }
+
+        next()
+    } catch (error) {
+        return res.status(500).json({ message: 'internal server error' || error.message });
     }
 }
 

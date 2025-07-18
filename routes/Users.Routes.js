@@ -1,17 +1,14 @@
 import express from 'express';
 import userController from '../controllers/Users.Controllers.js';
-// import { protect, authorize } from '../middlewares/Auth.Middlewares.js';
+import { authVerify } from '../middlewares/Auth.Middlewares.js';
 
 const userRouter = express.Router();
 
-// Lấy thông tin tài khoản đã login
-// userRouter.get('/me', protect, (req, res) => {
-//   res.json({
-//     email: req.account.email,
-//     role: req.account.role,
-//     verified: req.account.isVerified
-//   });
-// });
+// User routes - for authenticated users to manage their own profile
+userRouter.get('/me', authVerify, userController.getMyProfile);                    // Get current user's profile
+userRouter.post('/create-profile', authVerify, userController.createMyProfile);   // Create user profile for first time
+userRouter.put('/me', authVerify, userController.updateMyProfile);                // Update current user's profile
+
 
 // Lấy thông tin cá nhân
 userRouter.get('/me', authenticateToken, userController.getUser);
@@ -19,10 +16,10 @@ userRouter.get('/me', authenticateToken, userController.getUser);
 // Cập nhật thông tin cá nhân
 userRouter.put('/me', authenticateToken, userController.updateUser);
 
+// Admin routes - for admin to manage all users
+userRouter.get('/all', authVerify, userController.getAllUsers);                   // Get all users (admin only)
+userRouter.get('/:userId', authVerify, userController.getUserById);               // Get user by ID (admin only)
+userRouter.put('/:userId', authVerify, userController.updateUserById);            // Update user by ID (admin only)
 
-// // route role cho admin
-// userRouter.get('/admin-only', protect, authorize('ADMIN'), (req, res) => {
-//   res.json({ message: 'Chỉ ADMIN mới truy cập được route này.' });
-// });
 
 export default userRouter;
