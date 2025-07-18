@@ -9,9 +9,17 @@ userRouter.get('/me', authVerify, userController.getMyProfile);                 
 userRouter.post('/create-profile', authVerify, userController.createMyProfile);   // Create user profile for first time
 userRouter.put('/me', authVerify, userController.updateMyProfile);                // Update current user's profile
 
+
+// Lấy thông tin cá nhân
+userRouter.get('/me', authenticateToken, userController.getUser);
+
+// Cập nhật thông tin cá nhân
+userRouter.put('/me', authenticateToken, userController.updateUser);
+
 // Admin routes - for admin to manage all users
 userRouter.get('/all', authVerify, userController.getAllUsers);                   // Get all users (admin only)
 userRouter.get('/:userId', authVerify, userController.getUserById);               // Get user by ID (admin only)
 userRouter.put('/:userId', authVerify, userController.updateUserById);            // Update user by ID (admin only)
+
 
 export default userRouter;
