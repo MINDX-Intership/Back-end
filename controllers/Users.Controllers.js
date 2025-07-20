@@ -1,7 +1,7 @@
 import userModel from "../models/Users.Models.js";
 
 // Lấy thông tin cá nhân
-const getUser = async (req, res) => {
+export const getUser = async (req, res) => {
   try {
     const user = await userModel.findById(req.user.id).select("-password");
     if (!user) return res.status(404).json({ message: "Không tìm thấy người dùng" });
@@ -12,7 +12,7 @@ const getUser = async (req, res) => {
 };
 
 // Cập nhật thông tin cá nhân
-const updateUser = async (req, res) => {
+export const updateUser = async (req, res) => {
   try {
     const updated = await userModel.findByIdAndUpdate(req.user.id, req.body, {
       new: true,
@@ -23,10 +23,3 @@ const updateUser = async (req, res) => {
     res.status(500).json({ message: "Lỗi khi cập nhật thông tin", error: err.message });
   }
 };
-
-const userController = {
-  getUser,
-  updateUser,
-};
-
-export default userController;

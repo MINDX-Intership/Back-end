@@ -1,13 +1,10 @@
-const express = require("express");
-const router = express.Router();
-const { authenticateToken, isStaffOrAdmin } = require("../middlewares/Auth.Middlewares");
+import express from 'express';
+import { getMySchedule, addSchedule } from '../controllers/Sprint.Controllers.js';
+import { authVerify } from '../middlewares/Auth.Middlewares.js';
 
-const { getMySchedule, addSchedule } = require("../controllers/Sprints.Controllers");
+const sprintRouter = express.Router();
 
-// Nhân viên xem lịch làm việc cá nhân
-router.get("/sprints/mine", authenticateToken, isStaffOrAdmin, getMySchedule);
+sprintRouter.get('/my-schedule', authVerify, getMySchedule);     // Xem lịch làm việc
+sprintRouter.post('/add', authVerify, addSchedule);              // Thêm lịch làm việc
 
-// Nhân viên thêm lịch làm việc
-router.post("/sprints", authenticateToken, isStaffOrAdmin, addSchedule);
-
-module.exports = router;
+export default sprintRouter;

@@ -1,27 +1,17 @@
-const express = require("express");
-const router = express.Router();
-const {
-  authenticateToken,
-  isStaffOrAdmin,
-} = require("../middlewares/Auth.Middlewares");
-
-const {
-  addTaskToSprint,
+import express from 'express';
+import {
   submitTaskInfo,
   commentOnTask,
-  getMyTasks,
-} = require("../controllers/Task.Controllers");
+  addTaskToSprint,
+  getMyTasks
+} from '../controllers/Task.Controllers.js';
+import { authVerify, isAdmin } from '../middlewares/Auth.Middlewares.js';
 
-// Gửi thông tin task
-router.post("/task/:taskId/submit", authenticateToken, isStaffOrAdmin, submitTaskInfo);
+const taskRouter = express.Router();
 
-// Bình luận task
-router.post("/task/:taskId/comment", authenticateToken, isStaffOrAdmin, commentOnTask);
+taskRouter.get('/my-tasks', authVerify, getMyTasks);                              // Lấy task đã giao
+taskRouter.post('/:taskId/submit', authVerify, submitTaskInfo);                  // Gửi thông tin task
+taskRouter.post('/:taskId/comment', authVerify, commentOnTask);                  // Bình luận task
+taskRouter.post('/add', authVerify, isAdmin, addTaskToSprint);                   // Admin thêm task
 
-// Thêm task mới
-router.post("/task", authenticateToken, isStaffOrAdmin, addTaskToSprint);
-
-// Lấy task của người dùng
-router.get("/tasks/mine", authenticateToken, isStaffOrAdmin, getMyTasks);
-
-module.exports = router;
+export default taskRouter;
