@@ -1,7 +1,7 @@
-const Task = require("../models/Tasks.Models");
+import Task from "../models/Tasks.Models.js";
 
 // Nhân viên gửi thông tin task
-const submitTaskInfo = async (req, res) => {
+export const submitTaskInfo = async (req, res) => {
   try {
     const task = await Task.findById(req.params.taskId);
     if (!task) return res.status(404).json({ message: "Không tìm thấy công việc" });
@@ -17,7 +17,7 @@ const submitTaskInfo = async (req, res) => {
 };
 
 // Nhân viên bình luận task
-const commentOnTask = async (req, res) => {
+export const commentOnTask = async (req, res) => {
   try {
     const task = await Task.findById(req.params.taskId);
     if (!task) return res.status(404).json({ message: "Không tìm thấy công việc" });
@@ -38,7 +38,7 @@ const commentOnTask = async (req, res) => {
 };
 
 // Admin thêm task vào sprint
-const addTaskToSprint = async (req, res) => {
+export const addTaskToSprint = async (req, res) => {
   try {
     const { title, description, sprintId } = req.body;
 
@@ -58,7 +58,7 @@ const addTaskToSprint = async (req, res) => {
 };
 
 // Nhân viên xem các task đã được assign
-const getMyTasks = async (req, res) => {
+export const getMyTasks = async (req, res) => {
   try {
     const tasks = await Task.find({ assignedTo: req.user.id });
     res.status(200).json(tasks);
@@ -66,6 +66,3 @@ const getMyTasks = async (req, res) => {
     res.status(500).json({ message: "Lỗi khi lấy danh sách công việc", error: err.message });
   }
 };
-
-module.exports = { submitTaskInfo, commentOnTask, addTaskToSprint, getMyTasks };
-  
