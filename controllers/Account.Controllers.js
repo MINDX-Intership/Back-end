@@ -60,6 +60,29 @@ const accountController = {
       return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
     }
   },
+  verifyAccount: async (req, res) => {
+    try {
+      const { token } = req.params;
+      const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+      const account = await AccountsModels.findOne({
+        verifyToken: hashedToken,
+        verifyTokenExpire: { $gt: Date.now() }
+      });
+
+      if (!account) {
+        return res.status(400).json({ message: 'Token không hợp lệ hoặc đã hết hạn.' });
+      }
+      account.isVerified = true;
+      account.verifyToken = undefined;
+      account.verifyTokenExpire = undefined;
+
+      await account.save();
+      return res.status(200).json({ message: 'Tài khoản đã được xác thực thành công.' });
+    } catch (error) {
+      return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
+    }
+  },
   forgotPassword: async (req, res) => {
     const { email } = req.body;
 

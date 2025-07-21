@@ -16,7 +16,6 @@ const taskSchema = new mongoose.Schema({
     default: 'not_started'
   },
   submitInfo: { type: String },
-  comments: [commentSchema],
   duration: { type: Number },
   docTransfer: { type: String },
 

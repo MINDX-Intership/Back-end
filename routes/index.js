@@ -1,8 +1,8 @@
 import express from 'express';
-import accountRouter from './Account.Routes.js';
-import userRouter from './User.Routes.js';
-import sprintRouter from './Sprint.Routes.js';
-import taskRouter from './task.Routes.js';
+import accountRouter from './Accounts.Routes.js';
+import userRouter from './Users.Routes.js';
+import sprintRouter from './Sprints.Routes.js';
+import taskRouter from './Tasks.Routes.js';
 
 
 const router = express.Router();
