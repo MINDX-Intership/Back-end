@@ -5,8 +5,9 @@ const sprintSchema = new mongoose.Schema({
   title: { type: String, required: true },
   describe: { type: String },
   startDate: { type: Date, required: true },
-  endDate: { type: Date, required: true }
+  endDate: { type: Date, required: true },
 });
+
 
 const sprintModel = mongoose.model('Sprints', sprintSchema);
 export default sprintModel

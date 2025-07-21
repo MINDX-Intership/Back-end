@@ -105,7 +105,7 @@ export const registerValidate = async (req, res, next) => {
         if (!emailRegex.test(email)) return res.status(400).json({ message: 'Hãy sử dụng đúng format Email của Google' })
         if (!passwordRegex.test(password)) return res.status(400).json({ message: 'Mật khẩu cần có nhiều hơn 8 kí tự kèm với 1 kí tự viết hoa, 1 kí tự viết thường và 1 kí tự đặc biệt' })
 
-        next()
+        next()  
     } catch (error) {
         res.status(500).json({ message: 'Internal server error' || error.message })
     }

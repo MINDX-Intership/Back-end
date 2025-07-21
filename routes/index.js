@@ -1,14 +1,15 @@
-import accountRouter from "./Accounts.Routes.js";
-import userRouter from "./Users.Routes.js";
-// import taskRouter from "./task.Routes.js";
-// import sprintRouter from "./Sprints.Routes.js";
-import { Router } from "express";
+import express from 'express';
+import accountRouter from './Account.Routes.js';
+import userRouter from './User.Routes.js';
+import sprintRouter from './Sprint.Routes.js';
+import taskRouter from './task.Routes.js';
 
-const rootRouter = Router();
 
-rootRouter.use('/accounts', accountRouter);
-rootRouter.use('/users', userRouter);
-rootRouter.use('/tasks', taskRouter);       // Quản lý timeline task cá nhân
-rootRouter.use('/sprints', sprintRouter);   // Quản lý lịch làm việc cá nhân
+const router = express.Router();
 
-export default rootRouter;
+router.use('/account', accountRouter);
+router.use('/user', userRouter);
+router.use('/sprint', sprintRouter);
+router.use('/task', taskRouter);
+
+export default router;
