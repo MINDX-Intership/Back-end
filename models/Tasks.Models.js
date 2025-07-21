@@ -1,11 +1,5 @@
 import mongoose from 'mongoose';
 
-const commentSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  content: { type: String, required: true },
-  date: { type: Date, default: Date.now }
-});
-
 const taskSchema = new mongoose.Schema({
   depart: { type: mongoose.Schema.Types.ObjectId, ref: 'Depart' },
   course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },
