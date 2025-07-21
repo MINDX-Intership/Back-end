@@ -111,40 +111,61 @@ export const registerValidate = async (req, res, next) => {
     }
 }
 
-export const validateLogin = async (req, res, next) => {
-    const { email, password } = req.body
-    if (!email || !password) {
-        return res.status(400).json({ message: 'Vui lòng điền đầy đủ thông tin.' });
-    }
+// ...existing code...
 
+// ========== LOGIN VALIDATION MIDDLEWARE ==========
+export const validateLogin = async (req, res, next) => {
     try {
-        const account = await AccountsModels.findOne({ email })
-        if (!account) {
-            return res.status(400).json({ message: 'Email không tồn tại' });
+        const { email, password } = req.body;
+
+        // Validate input
+        if (!email || !password) {
+            return res.status(400).json({ message: 'Vui lòng cung cấp email và mật khẩu.' });
         }
 
-        const emailRegex = /^[\w.+-]+@gmail\.com$/
-        if (!emailRegex.test(email)) return res.status(400).json({ message: 'Hãy sử dụng đúng format Email của Google' })
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ message: 'Định dạng email không hợp lệ.' });
+        }
 
-        const isMatch = await bcrypt.compare(password, account.password)
-        if (!isMatch) {
-            return res.status(400).json({ message: 'Mật khẩu không đúng' });
+        // Find account by email
+        const account = await AccountsModels.findOne({ email });
+        if (!account) {
+            return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng.' });
+        }
+
+        // Check password
+        const isPasswordValid = await bcrypt.compare(password, account.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng.' });
         }
 
         // Check if account is verified
         if (!account.isVerified) {
             return res.status(403).json({ 
-                message: 'Tài khoản chưa được xác thực. Vui lòng kiểm tra email để xác thực tài khoản.',
-                needsVerification: true
+                message: 'Tài khoản chưa được xác thực. Vui lòng kiểm tra email.',
+                needsVerification: true,
+                email: account.email
             });
         }
 
-        req.account = account; // gắn account vào request để sử dụng ở controller
+        // Check if account is active
+        if (!account.active) {
+            return res.status(403).json({ message: 'Tài khoản đã bị vô hiệu hóa.' });
+        }
+
+        // Attach verified account to request
+        req.account = account;
         next();
+
     } catch (error) {
-        return res.status(500).json({ message: 'Internal server error' || error.message });
+        console.error('Login validation error:', error);
+        return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
     }
-}
+};
+
+// ...existing code...
 
 // ========== AUTHORIZATION MIDDLEWARES (Role-based) ==========
 
