@@ -144,7 +144,7 @@ const accountController = {
       const account = req.account;
 
       const jwtToken = jwt.sign({
-        id: account._id,
+        accountId: account._id, // ✅ Change from 'id' to 'accountId'
         email: account.email,
         role: account.role
       },
@@ -157,6 +157,7 @@ const accountController = {
         message: 'Đăng nhập thành công',
         token: jwtToken,
         account: {
+          accountId: account._id, // ✅ Change from 'id' to 'accountId'
           email: account.email,
           role: account.role
         }
@@ -181,8 +182,15 @@ const accountController = {
   // Add this new method for getting current user's account
   getCurrentAccount: async (req, res) => {
     try {
+      console.log('🔍 getCurrentAccount called');
+      console.log('🔍 req.account exists:', !!req.account);
+
       // Account is already attached by authVerify middleware
       const account = req.account;
+
+      if (!account) {
+        return res.status(401).json({ message: 'Không tìm thấy thông tin tài khoản.' });
+      }
 
       return res.status(200).json({
         message: 'Lấy thông tin tài khoản thành công',
@@ -195,10 +203,10 @@ const accountController = {
         }
       });
     } catch (error) {
-      console.error('Get current account error:', error);
+      console.error('❌ getCurrentAccount error:', error);
       return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
     }
-  },
+  }
 
   // ...existing code...
 };
