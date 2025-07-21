@@ -1,5 +1,5 @@
 import { get } from "mongoose";
-import sprintModel from "../models/Sprints.Models";
+import sprintModel from "../models/Sprints.Models.js";
 
 const sprintController = {
     createSprint: async (req, res) => {
@@ -33,3 +33,5 @@ const sprintController = {
         }
     }
 }
+
+export default sprintController;
