@@ -17,7 +17,13 @@ import './models/TaskComments.Models.js';
 const app = express();
 
 app.use(express.json());
-app.use(cors());
+app.use(cors(
+  {
+    origin: process.env.CLIENT_URL,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Các phương thức HTTP được phép
+    allowedHeaders: ['Content-Type', 'Authorization'], // Các header được phép
+  }
+));
 
 
 // Routes
