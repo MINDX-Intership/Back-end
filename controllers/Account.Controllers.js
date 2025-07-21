@@ -148,10 +148,10 @@ const accountController = {
         email: account.email,
         role: account.role
       },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: process.env.JWT_EXPIRE
-      });
+        process.env.JWT_SECRET,
+        {
+          expiresIn: process.env.JWT_EXPIRE
+        });
 
       return res.status(200).json({
         message: 'Đăng nhập thành công',
@@ -165,15 +165,42 @@ const accountController = {
       return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
     }
   },
-
-  getAccount: async (req, res) => {
+  getAccountById: async (req, res) => {
     try {
-      const account = await AccountsModels.find();
+      const account = await AccountsModels.findById(req.params.id).select('-password -verifyToken -resetPasswordToken');
+      if (!account) {
+        return res.status(404).json({ message: 'Tài khoản không tồn tại.' });
+      }
       return res.status(200).json(account);
     } catch (error) {
       return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
     }
-  }
+  },
+  // ...existing code...
+
+  // Add this new method for getting current user's account
+  getCurrentAccount: async (req, res) => {
+    try {
+      // Account is already attached by authVerify middleware
+      const account = req.account;
+
+      return res.status(200).json({
+        message: 'Lấy thông tin tài khoản thành công',
+        account: {
+          id: account._id,
+          email: account.email,
+          role: account.role,
+          isVerified: account.isVerified,
+          active: account.active
+        }
+      });
+    } catch (error) {
+      console.error('Get current account error:', error);
+      return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
+    }
+  },
+
+  // ...existing code...
 };
 
 export default accountController;
