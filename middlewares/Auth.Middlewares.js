@@ -1,33 +1,100 @@
 import AccountsModels from "../models/Accounts.Models.js";
+import userModel from "../models/Users.Models.js";
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt';
 
-//  Kiểm tra token
-export const authenticateToken = (req, res, next) => {
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token) return res.status(401).json({ message: "Token required" });
+// ========== AUTHENTICATION MIDDLEWARES ==========
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) return res.status(403).json({ message: "Invalid token" });
-        req.user = user;
+// Basic token authentication (checks if token is valid)
+export const authenticateToken = async (req, res, next) => {
+    try {
+        const authHeader = req.headers.authorization;
+        
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ message: 'Token không hợp lệ hoặc không có token.' });
+        }
+
+        const token = authHeader.split(' ')[1];
+        
+        if (!token) {
+            return res.status(401).json({ message: 'Không có token. Truy cập bị từ chối.' });
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const account = await AccountsModels.findById(decoded.accountId);
+
+        if (!account) {
+            return res.status(404).json({ message: 'Không tìm thấy tài khoản.' });
+        }
+
+        // Attach account to request (but don't check verification here)
+        req.account = account;
+        req.user = decoded; // Keep for backward compatibility
         next();
-    });
+
+    } catch (error) {
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(401).json({ message: 'Token không hợp lệ.' });
+        } else if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({ message: 'Token đã hết hạn.' });
+        } else {
+            return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
+        }
+    }
 };
 
-//  Phân quyền staff
-export const isStaff = (req, res, next) => {
-    if (req.user.role !== "staff") {
-        return res.status(403).json({ message: "Staff access only" });
+// Authentication + Verification check (for most protected routes)
+export const authVerify = async (req, res, next) => {
+    try {
+        const authHeader = req.headers.authorization;
+        
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ message: 'Token không hợp lệ hoặc không có token.' });
+        }
+
+        const token = authHeader.split(' ')[1];
+        
+        if (!token) {
+            return res.status(401).json({ message: 'Không có token. Truy cập bị từ chối.' });
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const account = await AccountsModels.findById(decoded.accountId);
+
+        if (!account) {
+            return res.status(404).json({ message: 'Không tìm thấy tài khoản.' });
+        }
+
+        // Check if account is verified
+        if (!account.isVerified) {
+            return res.status(403).json({ 
+                message: 'Tài khoản chưa được xác thực email. Vui lòng kiểm tra email để xác thực.',
+                needsVerification: true 
+            });
+        }
+
+        req.account = account;
+        next();
+
+    } catch (error) {
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(401).json({ message: 'Token không hợp lệ.' });
+        } else if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({ message: 'Token đã hết hạn.' });
+        } else {
+            return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
+        }
     }
-    next();
 };
 
 export const registerValidate = async (req, res, next) => {
     try {
         const { email, password, confirmPassword } = req.body
-        if (!email || !password || !confirmPassword) {
-            return res.status(400).json({ message: 'Vui lòng điền đầy đủ thông tin.' });
-        }
+
+        if (!email) return res.status(400).json({ message: 'Vui lòng nhập email.' });
+        if (!password) return res.status(400).json({ message: 'Vui lòng nhập mật khẩu.' });
+        if (!confirmPassword) return res.status(400).json({ message: 'Vui lòng nhập lại mật khẩu.' });
+        if (password.length < 8) return res.status(400).json({ message: 'Mật khẩu cần có ít nhất 8 kí tự.' });
 
         if (password !== confirmPassword) {
             return res.status(400).json({ message: 'Mật khẩu không khớp.' });
@@ -64,7 +131,7 @@ export const validateLogin = async (req, res, next) => {
             return res.status(400).json({ message: 'Mật khẩu không đúng' });
         }
 
-      // Check if account is verified
+        // Check if account is verified
         if (!account.isVerified) {
             return res.status(403).json({ 
                 message: 'Tài khoản chưa được xác thực. Vui lòng kiểm tra email để xác thực tài khoản.',
@@ -73,75 +140,152 @@ export const validateLogin = async (req, res, next) => {
         }
 
         req.account = account; // gắn account vào request để sử dụng ở controller
-      
         next();
     } catch (error) {
         return res.status(500).json({ message: 'Internal server error' || error.message });
     }
 }
 
-export const authVerify = async (req, res, next) => {
+// ========== AUTHORIZATION MIDDLEWARES (Role-based) ==========
+
+// Check if user has ADMIN role in Account model
+export const requireAccountAdmin = async (req, res, next) => {
     try {
-        const authHeader = req.headers.authorization;
-
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return res.status(401).json({ message: 'Token không hợp lệ hoặc không có token.' });
+        if (!req.account) {
+            return res.status(401).json({ message: 'Truy cập bị từ chối. Vui lòng đăng nhập.' });
         }
 
-        const token = authHeader.split(' ')[1];
-
-        if (!token) {
-            return res.status(401).json({ message: 'Không có token. Truy cập bị từ chối.' });
+        if (req.account.role !== 'ADMIN') {
+            return res.status(403).json({ message: 'Chỉ ADMIN mới có quyền truy cập chức năng này.' });
         }
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const account = await AccountsModels.findById(decoded.accountId);
-
-        if (!account) {
-            return res.status(404).json({ message: 'Không tìm thấy tài khoản.' });
-        }
-
-        if (!account.isVerified) {
-            return res.status(403).json({ message: 'Tài khoản chưa được xác thực email. Vui lòng kiểm tra email để xác thực.' });
-        }
-
-        req.account = account;
         next();
     } catch (error) {
-        if (error.name === 'JsonWebTokenError') {
-            return res.status(401).json({ message: 'Token không hợp lệ.' });
-        } else if (error.name === 'TokenExpiredError') {
-            return res.status(401).json({ message: 'Token đã hết hạn.' });
-        } else {
-            return res.status(500).json({ message: 'internal server error' || error.message });
-        }
+        return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
     }
-}
+};
 
-export const authLeader = async (req, res, next) => { // phân quyền theo role leader
+// Check if user has STAFF role in Account model
+export const requireAccountStaff = async (req, res, next) => {
     try {
-        if (!req.user) return res.status(401).json({ message: 'Truy cập bị từ chối' });
-
-        if (!req.user.role || req.user.role !== 'LEADER') {
-            return res.status(403).json({ message: 'Bạn không có quyền truy cập chức năng này.' });
+        if (!req.account) {
+            return res.status(401).json({ message: 'Truy cập bị từ chối. Vui lòng đăng nhập.' });
         }
 
-        next()
-    } catch (error) {
-        return res.status(500).json({ message: 'internal server error' || error.message });
-    }
-}
+        if (!['ADMIN', 'STAFF'].includes(req.account.role)) {
+            return res.status(403).json({ message: 'Chỉ STAFF hoặc ADMIN mới có quyền truy cập chức năng này.' });
+        }
 
-export const authAdmin = async (req, res, next) => { // phân quyền theo role admin
+        next();
+    } catch (error) {
+        return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
+    }
+};
+
+// Check if user has LEADER role in User model (requires User profile)
+export const requireUserLeader = async (req, res, next) => {
     try {
-        if (!req.user) return res.status(401).json({ message: 'Truy cập bị từ chối' });
-
-        if (!req.user.role || req.user.role !== 'ADMIN') {
-            return res.status(403).json({ message: 'Bạn không có quyền truy cập chức năng này.' });
+        if (!req.account) {
+            return res.status(401).json({ message: 'Truy cập bị từ chối. Vui lòng đăng nhập.' });
         }
 
-        next()
+        // Get user profile to check roleTag
+        const user = await userModel.findOne({ accountId: req.account._id });
+        if (!user) {
+            return res.status(404).json({ message: 'Không tìm thấy thông tin người dùng.' });
+        }
+
+        if (!['LEADER', 'ADMIN'].includes(user.roleTag)) {
+            return res.status(403).json({ message: 'Chỉ LEADER hoặc ADMIN mới có quyền truy cập chức năng này.' });
+        }
+
+        req.user = user; // Attach user profile for use in controllers
+        next();
     } catch (error) {
-        return res.status(500).json({ message: 'internal server error' || error.message });
+        return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
     }
-}
+};
+
+// Check if user has ADMIN role in User model (requires User profile)
+export const requireUserAdmin = async (req, res, next) => {
+    try {
+        if (!req.account) {
+            return res.status(401).json({ message: 'Truy cập bị từ chối. Vui lòng đăng nhập.' });
+        }
+
+        // Get user profile to check roleTag
+        const user = await userModel.findOne({ accountId: req.account._id });
+        if (!user) {
+            return res.status(404).json({ message: 'Không tìm thấy thông tin người dùng.' });
+        }
+
+        if (user.roleTag !== 'ADMIN') {
+            return res.status(403).json({ message: 'Chỉ ADMIN mới có quyền truy cập chức năng này.' });
+        }
+
+        req.user = user; // Attach user profile for use in controllers
+        next();
+    } catch (error) {
+        return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
+    }
+};
+
+// ========== MIDDLEWARE COMBINATIONS ==========
+
+// For routes that need authentication but allow unverified accounts
+export const authOnly = [authenticateToken];
+
+// For most protected routes (requires authentication + verification)
+export const authAndVerified = [authVerify];
+
+// For admin-only routes at account level
+export const adminOnly = [authVerify, requireAccountAdmin];
+
+// For staff-only routes at account level  
+export const staffOnly = [authVerify, requireAccountStaff];
+
+// For leader-only routes at user level
+export const leaderOnly = [authVerify, requireUserLeader];
+
+// For admin-only routes at user level
+export const userAdminOnly = [authVerify, requireUserAdmin];
+
+/* 
+========== USAGE EXAMPLES ==========
+
+// Allow unverified accounts (like for resending verification email)
+router.post('/resend-verification', ...authOnly, controller.resendVerification);
+
+// Normal protected routes
+router.get('/profile', ...authAndVerified, controller.getProfile);
+
+// Admin only routes
+router.get('/all-accounts', ...adminOnly, controller.getAllAccounts);
+
+// Staff routes  
+router.get('/reports', ...staffOnly, controller.getReports);
+
+// Leader routes
+router.post('/assign-task', ...leaderOnly, controller.assignTask);
+
+// User admin routes
+router.put('/user-roles', ...userAdminOnly, controller.updateUserRoles);
+
+========== MIDDLEWARE FLOW ==========
+
+1. authenticateToken: Only checks if JWT is valid
+   - Sets req.account and req.user
+   - Doesn't check verification status
+   - Use for: resend verification, check profile existence
+
+2. authVerify: Checks JWT + verification status
+   - Sets req.account
+   - Requires isVerified = true
+   - Use for: most protected routes
+
+3. Role middlewares: Check specific roles
+   - requireAccountAdmin/Staff: checks account.role (ADMIN/STAFF)
+   - requireUserLeader/Admin: checks user.roleTag (LEADER/ADMIN/MEMBER)
+   - Use after authVerify for role-specific routes
+
+*/
