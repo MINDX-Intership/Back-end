@@ -177,8 +177,6 @@ const accountController = {
       return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
     }
   },
-  // ...existing code...
-
   // Add this new method for getting current user's account
   getCurrentAccount: async (req, res) => {
     try {
@@ -206,9 +204,33 @@ const accountController = {
       console.error('❌ getCurrentAccount error:', error);
       return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
     }
-  }
+  },
+  changePassword: async (req, res) => {
+    const { currentPassword, newPassword, confirmNewPassword } = req.body;
 
-  // ...existing code...
+    if (!currentPassword || !newPassword || !confirmNewPassword) {
+      return res.status(400).json({ message: 'Vui lòng điền đầy đủ thông tin.' });
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      return res.status(400).json({ message: 'Mật khẩu mới không khớp.' });
+    }
+
+    try {
+      const account = await AccountsModels.findById(req.account._id);
+      if (!account) {
+        return res.status(404).json({ message: 'Tài khoản không tồn tại.' });
+      } else if (!await bcrypt.compare(currentPassword, account.password)) {
+        return res.status(400).json({ message: 'Mật khẩu hiện tại không đúng.' });
+      } else {
+        account.password = await bcrypt.hash(newPassword, 10);
+        await account.save();
+        return res.status(200).json({ message: 'Mật khẩu đã được thay đổi thành công.' });
+      }
+    } catch (error) {
+      return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
+    }
+  }
 };
 
 export default accountController;
