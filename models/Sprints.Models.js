@@ -1,18 +1,19 @@
 import mongoose from 'mongoose';
 
 const sprintSchema = new mongoose.Schema({
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // người sở hữu sprint
-    title: { type: String, required: true },            // tên công việc hoặc sprint
-    description: { type: String },                      // mô tả công việc
-    startDate: { type: Date, required: true },          // ngày bắt đầu
-    endDate: { type: Date, required: true },            // ngày kết thúc
-    status: {
-      type: String,
-      enum: ['Chưa bắt đầu', 'Đang làm', 'Hoàn thành'],
-      default: 'Chưa bắt đầu'
-    },
-    createdAt: { type: Date, default: Date.now }
-  });
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // người sở hữu sprint
+  title: { type: String, required: true },            // tên công việc hoặc sprint
+  description: { type: String },                      // mô tả công việc
+  startDate: { type: Date, required: true },          // ngày bắt đầu
+  endDate: { type: Date, required: true },            // ngày kết thúc
+  status: {
+    type: String,
+    enum: ['Chưa bắt đầu', 'Đang làm', 'Hoàn thành'],
+    default: 'Chưa bắt đầu'
+  },
+  projectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' }, // liên kết dự án m
+  createdAt: { type: Date, default: Date.now }
+});
 
 const sprintModel = mongoose.model('Sprints', sprintSchema);
-export default sprintModel
+export default sprintModel;
