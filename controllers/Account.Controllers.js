@@ -144,19 +144,20 @@ const accountController = {
       const account = req.account;
 
       const jwtToken = jwt.sign({
-        id: account._id,
+        accountId: account._id, // ✅ Change from 'id' to 'accountId'
         email: account.email,
         role: account.role
       },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: process.env.JWT_EXPIRE
-      });
+        process.env.JWT_SECRET,
+        {
+          expiresIn: process.env.JWT_EXPIRE
+        });
 
       return res.status(200).json({
         message: 'Đăng nhập thành công',
         token: jwtToken,
         account: {
+          accountId: account._id, // ✅ Change from 'id' to 'accountId'
           email: account.email,
           role: account.role
         }
@@ -165,11 +166,67 @@ const accountController = {
       return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
     }
   },
-
-  getAccount: async (req, res) => {
+  getAccountById: async (req, res) => {
     try {
-      const account = await AccountsModels.find();
+      const account = await AccountsModels.findById(req.params.id).select('-password -verifyToken -resetPasswordToken');
+      if (!account) {
+        return res.status(404).json({ message: 'Tài khoản không tồn tại.' });
+      }
       return res.status(200).json(account);
+    } catch (error) {
+      return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
+    }
+  },
+  // Add this new method for getting current user's account
+  getCurrentAccount: async (req, res) => {
+    try {
+      console.log('🔍 getCurrentAccount called');
+      console.log('🔍 req.account exists:', !!req.account);
+
+      // Account is already attached by authVerify middleware
+      const account = req.account;
+
+      if (!account) {
+        return res.status(401).json({ message: 'Không tìm thấy thông tin tài khoản.' });
+      }
+
+      return res.status(200).json({
+        message: 'Lấy thông tin tài khoản thành công',
+        account: {
+          id: account._id,
+          email: account.email,
+          role: account.role,
+          isVerified: account.isVerified,
+          active: account.active
+        }
+      });
+    } catch (error) {
+      console.error('❌ getCurrentAccount error:', error);
+      return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
+    }
+  },
+  changePassword: async (req, res) => {
+    const { currentPassword, newPassword, confirmNewPassword } = req.body;
+
+    if (!currentPassword || !newPassword || !confirmNewPassword) {
+      return res.status(400).json({ message: 'Vui lòng điền đầy đủ thông tin.' });
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      return res.status(400).json({ message: 'Mật khẩu mới không khớp.' });
+    }
+
+    try {
+      const account = await AccountsModels.findById(req.account._id);
+      if (!account) {
+        return res.status(404).json({ message: 'Tài khoản không tồn tại.' });
+      } else if (!await bcrypt.compare(currentPassword, account.password)) {
+        return res.status(400).json({ message: 'Mật khẩu hiện tại không đúng.' });
+      } else {
+        account.password = await bcrypt.hash(newPassword, 10);
+        await account.save();
+        return res.status(200).json({ message: 'Mật khẩu đã được thay đổi thành công.' });
+      }
     } catch (error) {
       return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
     }

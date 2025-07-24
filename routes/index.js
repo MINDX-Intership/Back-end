@@ -8,6 +8,8 @@ import documentRouter from './Documents.Routes.js';
 import projectRouter from './Projects.Routes.js';
 import supportRequestRouter from './SupportRequests.Routes.js';
 import googleCalendarRouter from './GoogleCalendar.Routes.js';  
+import jobPositionRouter from './JobPositions.Routes.js';
+import departRouter from './Departs.Routes.js';
 
 const router = express.Router();
 
@@ -20,5 +22,7 @@ router.use('/documents', documentRouter);
 router.use('/projects', projectRouter);
 router.use('/support', supportRequestRouter);      
 router.use('/calendar', googleCalendarRouter);       
+router.use('/job-position', jobPositionRouter);
+router.use('/depart', departRouter);
 
 export default router;
