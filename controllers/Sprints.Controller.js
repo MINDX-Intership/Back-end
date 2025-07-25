@@ -30,6 +30,45 @@ const sprintController = {
         } catch (err) {
             res.status(500).json({ message: "Lỗi khi lấy danh sách sprint", error: err.message });
         }
+    },
+    completeSprint: async (req, res) => {
+        const { id } = req.params;
+
+        if (!id) {
+            return res.status(400).json({ message: "Vui lòng cung cấp ID của sprint." });
+        }
+
+        try {
+            const sprint = await sprintModel.findById(id);
+            if (!sprint) {
+                return res.status(404).json({ message: "Sprint không tồn tại." });
+            }
+
+            sprint.isCompleted = true;
+            await sprint.save();
+            res.status(200).json({ message: "Hoàn thành sprint thành công.", sprint });
+        } catch (err) {
+            res.status(500).json({ message: "Lỗi khi hoàn thành sprint", error: err.message });
+        }
+    },
+    deleteSprint: async (req, res) => {
+        const { id } = req.params;
+
+        if (!id) {
+            return res.status(400).json({ message: "Vui lòng cung cấp ID của sprint." });
+        }
+
+        try {
+            const sprint = await sprintModel.findById(id);
+            if (!sprint) {
+                return res.status(404).json({ message: "Sprint không tồn tại." });
+            }
+
+            await sprintModel.findByIdAndDelete(id);
+            res.status(200).json({ message: "Xóa sprint thành công." });
+        } catch (err) {
+            res.status(500).json({ message: "Lỗi khi xóa sprint", error: err.message });
+        }
     }
 }
 

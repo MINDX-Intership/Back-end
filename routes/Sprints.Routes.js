@@ -4,10 +4,9 @@ import { authVerify, requireUserAdmin } from '../middlewares/Auth.Middlewares.js
 
 const sprintRouter = express.Router();
 
-// sprintRouter.get('/my-schedule', authVerify, sprintController.getMySchedule);     // Xem lịch làm việc
-// sprintRouter.post('/add', authVerify, sprintController.addSchedule);             // Thêm lịch làm việc
 sprintRouter.post('/add', authVerify, requireUserAdmin, sprintController.createSprint);             // Thêm sprint
-sprintRouter.get('/all', authVerify, sprintController.getSprint);          //
-
+sprintRouter.get('/all', authVerify, sprintController.getSprint);          // Lấy danh sách sprint
+sprintRouter.put('/complete/:id', authVerify, requireUserAdmin, sprintController.completeSprint); // Hoàn thành sprint
+sprintRouter.delete('/:id', authVerify, requireUserAdmin, sprintController.deleteSprint); // Xóa sprint
 
 export default sprintRouter;

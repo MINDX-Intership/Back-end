@@ -57,18 +57,25 @@ const userController = {
                 return res.status(400).json({ message: 'Email cá nhân đã được sử dụng.' });
             }
             
-            if (companyEmail) {
-                const existingCompanyEmailUser = await userModel.findOne({ companyEmail });
+            // if (companyEmail) {
+            //     const existingCompanyEmailUser = await userModel.findOne({ companyEmail });
+            //     if (existingCompanyEmailUser) {
+            //         return res.status(400).json({ message: 'Email công ty đã được sử dụng.' });
+            //     }
+            // }
+            
+            if (companyEmail && companyEmail.trim() !== '') {
+                const existingCompanyEmailUser = await userModel.findOne({ companyEmail: companyEmail.trim() });
                 if (existingCompanyEmailUser) {
                     return res.status(400).json({ message: 'Email công ty đã được sử dụng.' });
                 }
             }
-            
+
             // Create new user profile
             const newUser = await userModel.create({
                 accountId,
                 personalEmail,
-                companyEmail,
+                companyEmail, // Default to empty string if not provided
                 name,
                 phoneNumber,
                 dob: new Date(dob),
