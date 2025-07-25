@@ -1,4 +1,4 @@
-import jobPositionController from "../controllers/JobPositions.Controllers"
+import jobPositionController from "../controllers/JobPositions.Controllers.js"
 import { Router } from "express"
 
 const jobPositionRouter = Router()

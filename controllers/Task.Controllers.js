@@ -1,68 +1,96 @@
-import Task from "../models/Tasks.Models.js";
+import taskModel from "../models/Tasks.Models.js";
+import taskCommentModel from "../models/TaskComments.Models.js";
 
-// Nhân viên gửi thông tin task
-export const submitTaskInfo = async (req, res) => {
-  try {
-    const task = await Task.findById(req.params.taskId);
-    if (!task) return res.status(404).json({ message: "Không tìm thấy công việc" });
+const taskController = {
+    createTask: async (req, res) => {
+        const { title, description, sprintId } = req.body;
 
-    task.status = "in_progress";
-    task.submitInfo = req.body.submitInfo;
-    await task.save();
+        if (!title || !description || !sprintId) {
+            return res.status(400).json({ message: "Vui lòng điền đầy đủ thông tin." });
+        }
 
-    res.status(200).json({ message: "Gửi thông tin công việc thành công", task });
-  } catch (err) {
-    res.status(500).json({ message: "Lỗi khi gửi thông tin công việc", error: err.message });
-  }
-};
+        try {
+            const newTask = new taskModel({
+                title,
+                description,
+                sprint: sprintId,
+                createdBy: req.user.id,
+                status: "not_started",
+            });
 
-// Nhân viên bình luận task
-export const commentOnTask = async (req, res) => {
-  try {
-    const task = await Task.findById(req.params.taskId);
-    if (!task) return res.status(404).json({ message: "Không tìm thấy công việc" });
+            await newTask.save();
+            res.status(201).json({ message: "Tạo công việc mới thành công", task: newTask });
+        } catch (err) {
+            res.status(500).json({ message: "Lỗi khi tạo công việc", error: err.message });
+        }
+    },
+    getAllTasks: async (req, res) => {
+        try {
+            const tasks = await taskModel.find().populate('sprint', 'title').populate('createdBy', 'email');
+            res.status(200).json(tasks);
+        } catch (err) {
+            res.status(500).json({ message: "Lỗi khi lấy danh sách công việc", error: err.message });
+        }
+    },
+    getTasks: async (req, res) => {
+        try {
+            const tasks = await taskModel.find({ createdBy: req.user.id });
+            res.status(200).json(tasks);
+        } catch (err) {
+            res.status(500).json({ message: "Lỗi khi lấy danh sách công việc", error: err.message });
+        }
+    },
+    addTaskToSprint: async (req, res) => {
+        try {
+            const { title, description, sprintId } = req.body;
 
-    const comment = {
-      userId: req.user.id,
-      content: req.body.comment,
-      date: new Date(),
-    };
+            const newTask = new taskModel({
+                title,
+                description,
+                sprint: sprintId,
+                createdBy: req.user.id,
+                status: "not_started",
+            });
 
-    task.comments.push(comment);
-    await task.save();
+            await newTask.save();
+            res.status(201).json({ message: "Tạo công việc mới thành công", task: newTask });
+        } catch (err) {
+            res.status(500).json({ message: "Lỗi khi tạo công việc", error: err.message });
+        }
+    },
+    submitTaskInfo: async (req, res) => {
+        try {
+            const task = await Task.findById(req.params.taskId);
+            if (!task) return res.status(404).json({ message: "Không tìm thấy công việc" });
 
-    res.status(200).json({ message: "Đã thêm bình luận", task });
-  } catch (err) {
-    res.status(500).json({ message: "Lỗi khi bình luận công việc", error: err.message });
-  }
-};
+            task.status = "in_progress";
+            task.submitInfo = req.body.submitInfo;
+            await task.save();
 
-// Admin thêm task vào sprint
-export const addTaskToSprint = async (req, res) => {
-  try {
-    const { title, description, sprintId } = req.body;
+            res.status(200).json({ message: "Gửi thông tin công việc thành công", task });
+        } catch (err) {
+            res.status(500).json({ message: "Lỗi khi gửi thông tin công việc", error: err.message });
+        }
+    },
+    commentOnTask: async (req, res) => {
+        try {
+            const task = await taskModel.findById(req.params.taskId);
+            if (!task) return res.status(404).json({ message: "Không tìm thấy công việc" });
 
-    const newTask = new Task({
-      title,
-      description,
-      sprint: sprintId,
-      createdBy: req.user.id,
-      status: "not_started",
-    });
+            const comment = {
+                userId: req.user.id,
+                content: req.body.comment,
+                date: new Date(),
+            };
 
-    await newTask.save();
-    res.status(201).json({ message: "Tạo công việc mới thành công", task: newTask });
-  } catch (err) {
-    res.status(500).json({ message: "Lỗi khi tạo công việc", error: err.message });
-  }
-};
+            task.comments.push(comment);
+            await task.save();
 
-// Nhân viên xem các task đã được assign
-export const getMyTasks = async (req, res) => {
-  try {
-    const tasks = await Task.find({ assignedTo: req.user.id });
-    res.status(200).json(tasks);
-  } catch (err) {
-    res.status(500).json({ message: "Lỗi khi lấy danh sách công việc", error: err.message });
-  }
-};
+            res.status(200).json({ message: "Đã thêm bình luận", task });
+        } catch (err) {
+            res.status(500).json({ message: "Lỗi khi bình luận công việc", error: err.message });
+        }
+    }
+}
+
+export default taskController;
