@@ -3,7 +3,7 @@ import {
     createGoogleMeetEvent
   } from '../google/calendar.service.js';
   
-  import GoogleCalendarEvent from '../models/GoogleCalendar.Model.js';
+  import GoogleCalendarEvent from '../models/GoogleCalendar.Models.js';
   
   export const createEvent = async (req, res) => {
     try {

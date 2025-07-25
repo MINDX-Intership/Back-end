@@ -1,4 +1,4 @@
-import departController from "../controllers/Departs.Controllers";
+import departController from "../controllers/Departs.Controllers.js";
 import { Router } from "express";
 
 const departRouter = Router();

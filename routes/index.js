@@ -10,6 +10,8 @@ import supportRequestRouter from './SupportRequests.Routes.js';
 import googleCalendarRouter from './GoogleCalendar.Routes.js';  
 import jobPositionRouter from './JobPositions.Routes.js';
 import departRouter from './Departs.Routes.js';
+import adminTimelineTasksRouter from './AdminTimelineTasks.Routes.js';
+import adminAccessControlRouter from './AdminAccessControl.Routes.js';
 
 const router = express.Router();
 
@@ -24,5 +26,7 @@ router.use('/support', supportRequestRouter);
 router.use('/calendar', googleCalendarRouter);       
 router.use('/job-position', jobPositionRouter);
 router.use('/depart', departRouter);
+router.use('/admin/timeline-tasks', adminTimelineTasksRouter);
+router.use('/admin/access-control', adminAccessControlRouter);
 
 export default router;
