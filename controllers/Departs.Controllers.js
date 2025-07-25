@@ -1,4 +1,4 @@
-import departModel from "../models/Departs.Models";
+import departModel from "../models/Departs.Models.js";
 
 const departController = {
     createDepart: async (req, res) => {

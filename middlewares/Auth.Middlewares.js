@@ -111,9 +111,6 @@ export const registerValidate = async (req, res, next) => {
     }
 }
 
-// ...existing code...
-
-// ========== LOGIN VALIDATION MIDDLEWARE ==========
 export const validateLogin = async (req, res, next) => {
     try {
         const { email, password } = req.body;
@@ -164,10 +161,6 @@ export const validateLogin = async (req, res, next) => {
         return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
     }
 };
-
-// ...existing code...
-
-// ========== AUTHORIZATION MIDDLEWARES (Role-based) ==========
 
 // Check if user has ADMIN role in Account model
 export const requireAccountAdmin = async (req, res, next) => {
@@ -250,8 +243,6 @@ export const requireUserAdmin = async (req, res, next) => {
         return res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
     }
 };
-
-// ========== MIDDLEWARE COMBINATIONS ==========
 
 // For routes that need authentication but allow unverified accounts
 export const authOnly = [authenticateToken];

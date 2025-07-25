@@ -1,4 +1,3 @@
-import { get } from "mongoose";
 import sprintModel from "../models/Sprints.Models.js";
 
 const sprintController = {

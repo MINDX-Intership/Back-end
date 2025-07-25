@@ -8,12 +8,12 @@ const accountSchema = new mongoose.Schema({
   isVerified: { type: Boolean, default: false },                //  xác thực email
   
   // Email verification fields
-  // verifyToken: { type: String },                                // token xác thực email
-  // verifyTokenExpire: { type: Date },                            // thời gian hết hạn token xác thực
+  verifyToken: { type: String },                                // token xác thực email
+  verifyTokenExpire: { type: Date },                            // thời gian hết hạn token xác thực
   
   // Password reset fields
-  // resetPasswordToken: { type: String },                         // token đặt lại mật khẩu
-  // resetPasswordExpire: { type: Date }                           // thời gian hết hạn token đặt lại mật khẩu
+  resetPasswordToken: { type: String },                         // token đặt lại mật khẩu
+  resetPasswordExpire: { type: Date }                           // thời gian hết hạn token đặt lại mật khẩu
 });
 
 const accountModel = mongoose.model('Accounts', accountSchema);
