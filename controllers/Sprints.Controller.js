@@ -1,7 +1,6 @@
 import sprintModel from "../models/Sprints.Models.js";
 
 const sprintController = {
-    // Tạo Sprint
     createSprint: async (req, res) => {
         const { title, describe, startDate, endDate } = req.body;
 
@@ -24,8 +23,6 @@ const sprintController = {
             res.status(500).json({ message: "Lỗi khi tạo sprint", error: err.message });
         }
     },
-
-    // Lấy các Sprint đã tạo
     getSprint: async (req, res) => {
         try {
             const sprints = await sprintModel.find({ createdBy: req.user.id });
@@ -34,26 +31,45 @@ const sprintController = {
             res.status(500).json({ message: "Lỗi khi lấy danh sách sprint", error: err.message });
         }
     },
+    completeSprint: async (req, res) => {
+        const { id } = req.params;
 
-    // Xóa Sprint
-    deleteSprint: async (req, res) => {
+        if (!id) {
+            return res.status(400).json({ message: "Vui lòng cung cấp ID của sprint." });
+        }
+
         try {
-            const sprint = await sprintModel.findById(req.params.id);
-
+            const sprint = await sprintModel.findById(id);
             if (!sprint) {
                 return res.status(404).json({ message: "Sprint không tồn tại." });
             }
 
-            if (sprint.createdBy.toString() !== req.user.id) {
-                return res.status(403).json({ message: "Bạn không có quyền xóa sprint này." });
+            sprint.isCompleted = true;
+            await sprint.save();
+            res.status(200).json({ message: "Hoàn thành sprint thành công.", sprint });
+        } catch (err) {
+            res.status(500).json({ message: "Lỗi khi hoàn thành sprint", error: err.message });
+        }
+    },
+    deleteSprint: async (req, res) => {
+        const { id } = req.params;
+
+        if (!id) {
+            return res.status(400).json({ message: "Vui lòng cung cấp ID của sprint." });
+        }
+
+        try {
+            const sprint = await sprintModel.findById(id);
+            if (!sprint) {
+                return res.status(404).json({ message: "Sprint không tồn tại." });
             }
 
-            await sprint.deleteOne();
+            await sprintModel.findByIdAndDelete(id);
             res.status(200).json({ message: "Xóa sprint thành công." });
         } catch (err) {
             res.status(500).json({ message: "Lỗi khi xóa sprint", error: err.message });
         }
     }
-};
+}
 
 export default sprintController;
