@@ -11,7 +11,7 @@ const sprintSchema = new mongoose.Schema({
     enum: ['Chưa bắt đầu', 'Đang làm', 'Hoàn thành'],
     default: 'Chưa bắt đầu'
   },
-  projectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' }, // liên kết dự án m
+  projectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' }, // liên kết dự án 
   createdAt: { type: Date, default: Date.now }
 });
 
