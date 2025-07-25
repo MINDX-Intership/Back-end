@@ -13,6 +13,8 @@ import './models/Courses.Models.js';
 import './models/Sprints.Models.js';
 import './models/Tasks.Models.js';
 import './models/TaskComments.Models.js';
+import './models/Projects.Models.js'
+import './models/Timeline.Models.js'
 
 const app = express();
 
