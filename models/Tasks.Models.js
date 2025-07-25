@@ -7,7 +7,7 @@ const taskSchema = new mongoose.Schema({
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   assignees: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }], // Danh sách người được giao công việc
 
-  priority: { type: String, enum: ['LOW', 'MEDIUM', 'HIGH'], default: 'MEDIUM' },
+  priority: { type: String, enum: ['LOW', 'MEDIUM', 'HIGH'], default: 'LOW' },
   title: { type: String, required: true },
   description: { type: String },
   status: {
