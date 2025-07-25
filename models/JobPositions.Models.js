@@ -8,5 +8,5 @@ const jobPositionSchema = new mongoose.Schema({
   createAt: { type: Date, default: Date.now }, // ngày tạo chức vụ
 });
 
-const jobPositionModel = mongoose.model('JobPositions', jobPositionSchema);
+const jobPositionModel = mongoose.model('JobPosition', jobPositionSchema);
 export default jobPositionModel
