@@ -7,4 +7,4 @@ const documentSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-export default mongoose.model('Document', documentSchema);
+export default mongoose.model('Documents', documentSchema);

@@ -14,5 +14,5 @@ const userSchema = new mongoose.Schema({
   active: { type: Boolean, default: true }
 });
 
-const userModel = mongoose.model('User', userSchema);
+const userModel = mongoose.model('Users', userSchema);
 export default userModel

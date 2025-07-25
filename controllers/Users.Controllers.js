@@ -36,7 +36,7 @@ const userController = {
     createMyProfile: async (req, res) => {
         try {
             const accountId = req.account._id; // From authVerify middleware
-            const { personalEmail, companyEmail, name, phoneNumber, dob, departs, jobPosition } = req.body;
+            const { companyEmail, name, phoneNumber, dob, departs, jobPosition } = req.body;
             
             // Check if user profile already exists
             const existingUser = await userModel.findOne({ accountId });
@@ -45,17 +45,17 @@ const userController = {
             }
             
             // Validate required fields
-            if (!personalEmail || !name || !phoneNumber || !dob) {
+            if (!name || !phoneNumber || !dob) {
                 return res.status(400).json({ 
                     message: 'Vui lòng điền đầy đủ thông tin bắt buộc: personalEmail, name, phoneNumber, dob' 
                 });
             }
             
             // Check email uniqueness
-            const existingEmailUser = await userModel.findOne({ personalEmail });
-            if (existingEmailUser) {
-                return res.status(400).json({ message: 'Email cá nhân đã được sử dụng.' });
-            }
+            // const existingEmailUser = await userModel.findOne({ personalEmail });
+            // if (existingEmailUser) {
+            //     return res.status(400).json({ message: 'Email cá nhân đã được sử dụng.' });
+            // }
             
             // if (companyEmail) {
             //     const existingCompanyEmailUser = await userModel.findOne({ companyEmail });
@@ -74,8 +74,8 @@ const userController = {
             // Create new user profile
             const newUser = await userModel.create({
                 accountId,
-                personalEmail,
-                companyEmail, // Default to empty string if not provided
+                personalEmail: req.account.email, // Use the email from the account
+                companyEmail: companyEmail || '', // Default to empty string if not provided
                 name,
                 phoneNumber,
                 dob: new Date(dob),

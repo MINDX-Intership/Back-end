@@ -9,4 +9,4 @@ const GoogleCalendarEventSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-export default mongoose.model('GoogleCalendarEvent', GoogleCalendarEventSchema);
+export default mongoose.model('GoogleCalendarEvents', GoogleCalendarEventSchema);
