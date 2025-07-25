@@ -41,4 +41,4 @@ export const sendResetPasswordEmail = async (to, token) => {
     };
 
     await transporter.sendMail(mailOptions);
-};
+}; // không sử dụng nữa, vì admin đã làm chức năng này

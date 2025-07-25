@@ -3,10 +3,10 @@ import mongoose from 'mongoose';
 const userSchema = new mongoose.Schema({
   accountId: { type: mongoose.Schema.Types.ObjectId, ref: 'Accounts', required: true },
   departs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Departs' }], // danh sách phòng ban - fixed ref name
-  jobPosition: [{ type: mongoose.Schema.Types.ObjectId, ref: 'JobPosition' }], // danh sách chức vụ - matches JobPositions model
+  jobPosition: [{ type: mongoose.Schema.Types.ObjectId, ref: 'JobPositions' }], // danh sách chức vụ - matches JobPositions model
 
   personalEmail: { type: String, unique: true, required: true },
-  companyEmail: { type: String, unique: true, default: "" },
+  companyEmail: { type: String, unique: true }, // Default to empty string if not provided
   name: { type: String, required: true},
   roleTag: { type: String, enum: ['LEADER', 'MEMBER', 'ADMIN'], default: 'MEMBER' }, // phân quyền người dùng
   phoneNumber: { type: String, required: true},
@@ -14,5 +14,5 @@ const userSchema = new mongoose.Schema({
   active: { type: Boolean, default: true }
 });
 
-const userModel = mongoose.model('User', userSchema);
+const userModel = mongoose.model('Users', userSchema);
 export default userModel

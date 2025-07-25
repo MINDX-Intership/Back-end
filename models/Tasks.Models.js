@@ -1,13 +1,13 @@
 import mongoose from 'mongoose';
 
 const taskSchema = new mongoose.Schema({
-  depart: { type: mongoose.Schema.Types.ObjectId, ref: 'Depart' },
-  course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },
-  sprint: { type: mongoose.Schema.Types.ObjectId, ref: 'Sprint' },
+  depart: { type: mongoose.Schema.Types.ObjectId, ref: 'Departs' },
+  course: { type: mongoose.Schema.Types.ObjectId, ref: 'Courses' },
+  sprint: { type: mongoose.Schema.Types.ObjectId, ref: 'Sprints' },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  assignees: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  assignees: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }], // Danh sách người được giao công việc
 
-  priority: { type: String, enum: ['LOW', 'MEDIUM', 'HIGH'], default: 'MEDIUM' },
+  priority: { type: String, enum: ['LOW', 'MEDIUM', 'HIGH'], default: 'LOW' },
   title: { type: String, required: true },
   description: { type: String },
   status: {

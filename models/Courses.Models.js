@@ -2,7 +2,7 @@
 import mongoose from 'mongoose';
 
 const courseSchema = new mongoose.Schema({
-  depart: { type: mongoose.Schema.Types.ObjectId, ref: 'Depart' },
+  depart: { type: mongoose.Schema.Types.ObjectId, ref: 'Departs' },
   name: { type: String, required: true },
   levelNumber: { type: Number, required: true },          // mức độ đào tạo
   code: { type: String, required: true, unique: true }, // mã khóa học phải độc nhất

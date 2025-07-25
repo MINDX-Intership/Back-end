@@ -12,7 +12,6 @@ const taskCommentController = {
         content: req.body.comment,
         date: new Date(),
       };
-
       task.comments.push(comment);
       await task.save();
 
