@@ -8,4 +8,4 @@ const notificationSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 });
 
-export default mongoose.model('Notification', notificationSchema);
+export default mongoose.model('Notifications', notificationSchema);

@@ -11,5 +11,5 @@ const timelineSchema = new mongoose.Schema({
     tasksId: [ {type: mongoose.Schema.Types.ObjectId, ref: 'Tasks'} ], // Danh sách công việc liên quan
 })
 
-const timelineModel = mongoose.model('Timeline', timelineSchema);
+const timelineModel = mongoose.model('Timelines', timelineSchema);
 export default timelineModel;
