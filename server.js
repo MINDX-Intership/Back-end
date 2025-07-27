@@ -24,6 +24,7 @@ app.use(cors(
     origin: process.env.CLIENT_URL,
     methods: ['GET', 'POST', 'PUT', 'DELETE'], // Các phương thức HTTP được phép
     allowedHeaders: ['Content-Type', 'Authorization'], // Các header được phép
+    accessControlAllowCredentials: true, // Cho phép cookie và thông tin xác thực
   }
 ));
 

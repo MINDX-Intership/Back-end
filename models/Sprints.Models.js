@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const sprintSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // người sở hữu sprint
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'Users', required: true }, // người sở hữu sprint
   title: { type: String, required: true },            // tên công việc hoặc sprint
   description: { type: String },                      // mô tả công việc
   startDate: { type: Date, required: true },          // ngày bắt đầu
@@ -11,7 +11,7 @@ const sprintSchema = new mongoose.Schema({
     enum: ['Chưa bắt đầu', 'Đang làm', 'Hoàn thành'],
     default: 'Chưa bắt đầu'
   },
-  projectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' }, // liên kết dự án 
+  projectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Projects' }, // liên kết dự án 
   createdAt: { type: Date, default: Date.now }
 });
 
