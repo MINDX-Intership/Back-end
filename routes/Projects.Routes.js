@@ -1,9 +1,15 @@
 import { Router } from 'express';
-import { authVerify } from '../middlewares/Auth.Middlewares.js';
+import { authVerify, requireUserAdmin } from '../middlewares/Auth.Middlewares.js';
 import projectController from '../controllers/Projects.Controller.js';
 
-const router = Router();
+const projectRouter = Router();
 
+projectRouter.post('/add', authVerify, requireUserAdmin, projectController.createProject); // Thêm dự án
+projectRouter.put('/update/:projectId', authVerify, requireUserAdmin, projectController.updateProjectInfo); // Cập nhật thông tin dự án
+projectRouter.post('/add-user/:projectid', authVerify, requireUserAdmin, projectController.addUserToProject); // Thêm người dùng vào dự án
+projectRouter.delete('/delete/:projectId', authVerify, requireUserAdmin, projectController.deleteProject); // Xóa dự án
+projectRouter.get('/all', authVerify, projectController.getAllProjects); // Lấy danh sách dự án
+projectRouter.get('/:projectId', authVerify, projectController.getProjectById); // Lấy thông tin dự án theo ID
+projectRouter.get('/progress/:projectId', authVerify, projectController.getProjectReport); // Lấy tiến độ dự án
 
-
-export default router;
+export default projectRouter;
