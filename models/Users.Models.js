@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
   accountId: { type: mongoose.Schema.Types.ObjectId, ref: 'Accounts', required: true },
+  socketId: { type: String, required: true }, // ID của socket để quản lý kết nối thời gian thực
   departs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Departs' }], // danh sách phòng ban - fixed ref name
   jobPosition: [{ type: mongoose.Schema.Types.ObjectId, ref: 'JobPositions' }], // danh sách chức vụ - matches JobPositions model
 
@@ -11,7 +12,8 @@ const userSchema = new mongoose.Schema({
   roleTag: { type: String, enum: ['LEADER', 'MEMBER', 'ADMIN'], default: 'MEMBER' }, // phân quyền người dùng
   phoneNumber: { type: String, required: true},
   dob: { type: Date, required: true },
-  active: { type: Boolean, default: true }
+  active: { type: Boolean, default: true },
+  online: { type: Boolean, default: false }, // Trạng thái trực tuyến của người dùng
 });
 
 const userModel = mongoose.model('Users', userSchema);
