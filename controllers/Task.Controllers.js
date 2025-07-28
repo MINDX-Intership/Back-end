@@ -178,7 +178,7 @@ const taskController = {
 
             const task = await taskModel.findById(taskId)
                 .populate('createdBy', 'name personalEmail')
-                .populate('assignedTo', 'name personalEmail')
+                .populate('assignees', 'name personalEmail')
                 .populate('sprintId', 'title status startDate endDate');
 
             if (!task) {
@@ -214,7 +214,7 @@ const taskController = {
     updateTask: async (req, res) => {
         try {
             const { taskId } = req.params;
-            const { title, description, status, priority, dueDate, assignedTo } = req.body;
+            const { title, description, status, priority, duration, assignees } = req.body;
 
             if (!mongoose.Types.ObjectId.isValid(taskId)) {
                 return res.status(400).json({ message: "ID task không hợp lệ." });
@@ -234,7 +234,7 @@ const taskController = {
             // Check permission
             const canEdit = req.account.role === 'ADMIN' || 
                            task.createdBy.equals(userProfile._id) ||
-                           task.assignedTo.equals(userProfile._id);
+                           task.assignees.equals(userProfile._id);
 
             if (!canEdit) {
                 return res.status(403).json({ message: "Bạn không có quyền chỉnh sửa task này." });
@@ -246,9 +246,9 @@ const taskController = {
             if (description) updateData.description = description;
             if (status) updateData.status = status;
             if (priority) updateData.priority = priority;
-            if (dueDate) updateData.dueDate = new Date(dueDate);
-            if (assignedTo && mongoose.Types.ObjectId.isValid(assignedTo)) {
-                updateData.assignedTo = mongoose.Types.ObjectId(assignedTo);
+            if (duration) updateData.duration = new Date(duration);
+            if (assignees && mongoose.Types.ObjectId.isValid(assignees)) {
+                updateData.assignees = mongoose.Types.ObjectId(assignees);
             }
 
             const updatedTask = await taskModel.findByIdAndUpdate(
@@ -256,7 +256,7 @@ const taskController = {
                 updateData,
                 { new: true, runValidators: true }
             ).populate('createdBy', 'name personalEmail')
-             .populate('assignedTo', 'name personalEmail')
+             .populate('assignees', 'name personalEmail')
              .populate('sprintId', 'title status');
 
             res.status(200).json({ 
@@ -310,52 +310,16 @@ const taskController = {
             res.status(500).json({ message: "Lỗi khi xóa công việc", error: err.message });
         }
     },
-    // // Submit task info (mark as in progress with submission details)
-    // submitTaskInfo: async (req, res) => {
-    //     try {
-    //         const { taskId } = req.params;
-    //         const { submitInfo } = req.body;
+    submitTask: async (req, res) => {
+        const taskId = req.params.taskId;
+        const { documentTransfer } = req.body;
 
-    //         if (!mongoose.Types.ObjectId.isValid(taskId)) {
-    //             return res.status(400).json({ message: "ID task không hợp lệ." });
-    //         }
+        const task = await taskModel.findById(taskId);
 
-    //         const task = await taskModel.findById(taskId);
-    //         if (!task) {
-    //             return res.status(404).json({ message: "Không tìm thấy công việc." });
-    //         }
-
-    //         // Find user profile
-    //         const userProfile = await userModel.findOne({ accountId: req.account._id });
-    //         if (!userProfile) {
-    //             return res.status(404).json({ message: "Không tìm thấy profile người dùng." });
-    //         }
-
-    //         // Check if user is assigned to this task
-    //         if (!task.assignedTo.equals(userProfile._id)) {
-    //             return res.status(403).json({ message: "Chỉ người được giao task mới có thể submit thông tin." });
-    //         }
-
-    //         // Update task
-    //         task.status = "IN_PROGRESS";
-    //         task.submitInfo = submitInfo;
-    //         task.submittedAt = new Date();
-    //         await task.save();
-
-    //         const populatedTask = await taskModel.findById(taskId)
-    //             .populate('createdBy', 'name personalEmail')
-    //             .populate('assignedTo', 'name personalEmail')
-    //             .populate('sprintId', 'title status');
-
-    //         res.status(200).json({ 
-    //             message: "Gửi thông tin công việc thành công", 
-    //             task: populatedTask 
-    //         });
-    //     } catch (err) {
-    //         console.error('❌ Submit task info error:', err);
-    //         res.status(500).json({ message: "Lỗi khi gửi thông tin công việc", error: err.message });
-    //     }
-    // }
+        if (!task) {
+            return res.status(400).json({ message: "ID task không hợp lệ." });
+        }
+    }
 }
 
 export default taskController;

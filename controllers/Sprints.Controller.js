@@ -5,7 +5,7 @@ import mongoose from 'mongoose';
 const sprintController = {
     createSprint: async (req, res) => {
         try {
-            const { title, description, startDate, endDate, projectId } = req.body;
+            const { title, description, startDate, endDate, projectId, teamMembers } = req.body;
 
             // Validate required fields
             if (!title || !startDate || !endDate) {
@@ -69,31 +69,22 @@ const sprintController = {
             }
 
             // Create sprint data with correct field names
-            const sprintData = {
-                user: userProfile._id, // Use the user profile ID, not account ID
+            const newSprint = await sprintModel.create({
+                createdBy: userProfile._id, // Use user profile ID
                 title,
-                description: description || '', // Use 'description' not 'describe'
+                description,
                 startDate: start,
                 endDate: end,
-                status: 'Chưa bắt đầu' // Use Vietnamese enum value
-            };
+                status: 'NOTSTARTED', // Default status
+                projectId: projectId ? mongoose.Types.ObjectId(projectId) : null, // Convert to ObjectId if provided
+                teamMembers: teamMembers ? teamMembers.map(id => mongoose.Types.ObjectId(id)) : [] // Convert to ObjectIds
+            })
 
-            // Add projectId if provided
-            if (projectId) {
-                sprintData.projectId = mongoose.Types.ObjectId(projectId);
-            }
-
-            const newSprint = new sprintModel(sprintData);
             await newSprint.save();
-
-            // Populate the created sprint with related data
-            const populatedSprint = await sprintModel.findById(newSprint._id)
-                .populate('user', 'name personalEmail')
-                .populate('projectId', 'title');
 
             res.status(201).json({ 
                 message: "Tạo sprint thành công", 
-                sprint: populatedSprint,
+                sprint: newSprint,
                 validation: {
                     todayDate: today.toISOString().split('T')[0],
                     duration: Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + " ngày",
@@ -317,7 +308,6 @@ const sprintController = {
             res.status(500).json({ message: "Lỗi khi cập nhật sprint", error: err.message });
         }
     },
-
     completeSprint: async (req, res) => {
         try {
             const { id } = req.params;
@@ -413,53 +403,6 @@ const sprintController = {
         } catch (err) {
             console.error('❌ Delete sprint error:', err);
             res.status(500).json({ message: "Lỗi khi xóa sprint", error: err.message });
-        }
-    },
-
-    // Get sprint statistics
-    getSprintStats: async (req, res) => {
-        try {
-            // Find user profile
-            const userProfile = await userModel.findOne({ accountId: req.account._id });
-            if (!userProfile) {
-                return res.status(404).json({ message: "Không tìm thấy profile người dùng." });
-            }
-
-            const matchFilter = req.account.role === 'ADMIN' ? {} : { user: userProfile._id };
-            
-            const stats = await sprintModel.aggregate([
-                { $match: matchFilter },
-                {
-                    $group: {
-                        _id: null,
-                        totalSprints: { $sum: 1 },
-                        completedSprints: {
-                            $sum: { $cond: [{ $eq: ['$status', 'Hoàn thành'] }, 1, 0] }
-                        },
-                        activeSprints: {
-                            $sum: { $cond: [{ $eq: ['$status', 'Đang làm'] }, 1, 0] }
-                        },
-                        pendingSprints: {
-                            $sum: { $cond: [{ $eq: ['$status', 'Chưa bắt đầu'] }, 1, 0] }
-                        }
-                    }
-                }
-            ]);
-
-            const result = stats[0] || {
-                totalSprints: 0,
-                completedSprints: 0,
-                activeSprints: 0,
-                pendingSprints: 0
-            };
-
-            res.status(200).json({
-                message: "Lấy thống kê sprint thành công",
-                stats: result
-            });
-        } catch (err) {
-            console.error('❌ Get sprint stats error:', err);
-            res.status(500).json({ message: "Lỗi khi lấy thống kê sprint", error: err.message });
         }
     }
 }
