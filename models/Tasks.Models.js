@@ -1,24 +1,22 @@
 import mongoose from 'mongoose';
 
 const taskSchema = new mongoose.Schema({
-  depart: { type: mongoose.Schema.Types.ObjectId, ref: 'Departs' },
-  course: { type: mongoose.Schema.Types.ObjectId, ref: 'Courses' },
-  sprint: { type: mongoose.Schema.Types.ObjectId, ref: 'Sprints' },
-  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  assignees: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }], // Danh sách người được giao công việc
-
-  priority: { type: String, enum: ['LOW', 'MEDIUM', 'HIGH'], default: 'LOW' },
+  departId: { type: mongoose.Schema.Types.ObjectId, ref: 'Departs', required: true },
+  courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Courses' },
+  sprintId: { type: mongoose.Schema.Types.ObjectId, ref: 'Sprints' },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Users', required: true },
+  assignees: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Users', required: true }], // Danh sách người được giao công việc
+  priority: { type: String, enum: ['LOW', 'MEDIUM', 'HIGH'], default: 'MEDIUM' },
   title: { type: String, required: true },
   description: { type: String },
   status: {
     type: String,
-    enum: ['not_started', 'in_progress', 'submitted', 'needs_review', 'complete', 'overdue', 'on_hold'],
-    default: 'not_started'
+    enum: ['NOTSTARTED', 'INPROGRESS', 'SUBMITTED', 'NEEDSREVIEW', 'COMPLETE', 'OVERDUE', 'ONHOLD'],
+    default: 'NOTSTARTED'
   },
-  submitInfo: { type: String },
+  // submitInfo: { type: String },
   duration: { type: Number },
-  docTransfer: { type: String },
-
+  docTransfer: { type: String }, // Đường dẫn đến tài liệu chuyển giao
   createdAt: { type: Date, default: Date.now }
 });
 

@@ -18,21 +18,21 @@ import personalManagementRouter from './PersonalManagement.Routes.js';
 
 const router = Router();
 
-router.use('/account', accountRouter);
-router.use('/user', userRouter);
-router.use('/sprint', sprintRouter);
-router.use('/task', taskRouter);
+router.use('/accounts', accountRouter);
+router.use('/users', userRouter);
+router.use('/sprints', sprintRouter);
+router.use('/tasks', taskRouter);
 router.use('/notifications', notificationRouter);
 router.use('/documents', documentRouter);
 router.use('/projects', projectRouter);
-router.use('/support', supportRequestRouter);      
-router.use('/calendar', googleCalendarRouter);       
-router.use('/job-position', jobPositionRouter);
-router.use('/depart', departRouter);
+router.use('/supports', supportRequestRouter);      
+router.use('/calendars', googleCalendarRouter);       
+router.use('/job-positions', jobPositionRouter);
+router.use('/departs', departRouter);
 router.use('/admin/timeline-tasks', adminTimelineTasksRouter);
 router.use('/admin/access-control', adminAccessControlRouter);
-router.use('/report', reportRouter);
-router.use('/timeline', timelineRouter);
+router.use('/reports', reportRouter);
+router.use('/timelines', timelineRouter);
 router.use('/personal-management', personalManagementRouter);
 
 export default router;
