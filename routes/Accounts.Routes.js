@@ -1,10 +1,10 @@
 import express from 'express';
 import accountController from '../controllers/Account.Controllers.js';
-import { registerValidate, validateLogin, authVerify, authenticateToken } from '../middlewares/Auth.Middlewares.js'; // Uncomment if you need to use auth middlewares
+import { registerValidate, validateLogin, requireUserAdmin, authenticateToken } from '../middlewares/Auth.Middlewares.js'; // Uncomment if you need to use auth middlewares
 
 const accountRouter = express.Router();
 
-accountRouter.post('/register', registerValidate, accountController.register);       // Đăng ký tài khoản
+accountRouter.post('/register', registerValidate, requireUserAdmin, accountController.register);       // Đăng ký tài khoản
 accountRouter.post('/send-verification', accountController.verifyEmail);            // Gửi email xác thực
 accountRouter.get('/verify-email/:token', accountController.verifyAccount); // Xác thực email từ link
 accountRouter.post('/login', validateLogin, accountController.login);             // Đăng nhập
