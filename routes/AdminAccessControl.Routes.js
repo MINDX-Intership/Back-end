@@ -1,17 +1,13 @@
 import express from 'express';
-import {
-  grantAccess,
-  updateAccess,
-  deleteAccess
-} from '../controllers/AdminAccessControl.Controller.js';
+import accessControlController from '../controllers/AdminAccessControl.Controller.js';
 
 import { authVerify, requireUserAdmin } from '../middlewares/Auth.Middlewares.js';
 
 const router = express.Router();
 
 // Tất cả đều là chức năng của admin
-router.post('/grant', authVerify, requireUserAdmin, grantAccess);        // Cấp quyền
-router.put('/update', authVerify, requireUserAdmin, updateAccess);       // Chỉnh sửa quyền
-router.delete('/delete/:userId', authVerify, requireUserAdmin, deleteAccess); // Xóa quyền
+router.post('/grant', authVerify, requireUserAdmin, accessControlController.grantAccess);        // Cấp quyền
+router.put('/update', authVerify, requireUserAdmin, accessControlController.updateAccess);       // Chỉnh sửa quyền
+router.delete('/delete/:userId', authVerify, requireUserAdmin, accessControlController.deleteAccess); // Xóa quyền
 
 export default router;
