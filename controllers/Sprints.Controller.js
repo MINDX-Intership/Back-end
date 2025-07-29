@@ -131,7 +131,7 @@ const sprintController = {
             }
 
             const sprints = await sprintModel.find(filter)
-                .populate('user', 'name personalEmail')
+                .populate('createdBy', 'name personalEmail')
                 .populate('projectId', 'title')
                 .sort({ createdAt: -1 })
                 .skip((page - 1) * limit)
