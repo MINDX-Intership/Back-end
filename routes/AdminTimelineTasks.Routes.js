@@ -4,29 +4,23 @@ import {
     addTimelineTask,
     updateTimelineTask,
     deleteTimelineTask,
-    getTimelineTasksByUser  
+    getTimelineTasksByUser
 } from '../controllers/AdminTimelineTasks.Controllers.js';
 import { authVerify, requireUserAdmin } from '../middlewares/Auth.Middlewares.js';
 
 const router = express.Router();
 
-// Yêu cầu đăng nhập và là admin
-router.use(authVerify);
-router.use(requireUserAdmin);
+// dành riêng cho Admin
+router.use(authVerify);         // Xác thực người dùng
+router.use(requireUserAdmin);   // Kiểm tra quyền Admin
 
-// Lấy toàn bộ timeline task của tất cả người dùng
-router.get('/', getAllTimelineTasks);
+// Quản lý tất cả timeline task
+router.get('/', getAllTimelineTasks);            // Lấy toàn bộ task
+router.post('/add', addTimelineTask);            // Thêm task
+router.put('/update/:id', updateTimelineTask);   // Cập nhật task
+router.delete('/delete/:id', deleteTimelineTask); // Xóa task
 
-// Thêm timeline task cho người dùng
-router.post('/add', addTimelineTask);
-
-// Cập nhật task theo ID
-router.put('/update/:id', updateTimelineTask);
-
-// Xóa task theo ID
-router.delete('/delete/:id', deleteTimelineTask);
-
-// Lấy timeline task của một người dùng cụ thể
-router.get('/user/:userId', getTimelineTasksByUser);
+// Xem timeline task của 1 người dùng cụ thể -- Admin
+router.get('/user/:userId', getTimelineTasksByUser); // Lấy task theo user
 
 export default router;
