@@ -5,7 +5,7 @@ import UserModel from '../models/Users.Models.js';
 // QLTT01: Lấy danh sách tất cả timeline task của mọi người (Admin)
 export const getAllTimelineTasks = async (req, res) => {
     try {
-        const tasks = await TaskModel.find().populate('assignedTo', 'fullName email');
+        const tasks = await TaskModel.find().populate('assignees', 'fullName email');
         res.status(200).json({ success: true, data: tasks });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Lỗi khi lấy danh sách timeline tasks', error });
@@ -16,17 +16,17 @@ export const getAllTimelineTasks = async (req, res) => {
 // QLTT01: Thêm timeline task cho người dùng
 export const addTimelineTask = async (req, res) => {
     try {
-        const { title, description, assignedTo, startDate, endDate } = req.body;
+        const { title, description, assignees, startDate, endDate } = req.body;
 
-        const user = await UserModel.findById(assignedTo);
-        if (!user) {
+        const users = await UserModel.find({ _id: { $in: assignees } });
+        if (users.length === 0) {
             return res.status(404).json({ success: false, message: 'Người dùng không tồn tại' });
         }
 
         const newTask = await TaskModel.create({
             title,
             description,
-            assignedTo,
+            assignees,
             startDate,
             endDate,
             createdBy: req.user._id,
@@ -84,7 +84,7 @@ export const getTimelineTasksByUser = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Người dùng không tồn tại' });
         }
 
-        const tasks = await TaskModel.find({ assignedTo: userId }).populate('assignedTo', 'fullName email');
+        const tasks = await TaskModel.find({ assignedTo: userId }).populate('assignees', 'fullName email');
 
         res.status(200).json({ success: true, data: tasks });
     } catch (error) {
