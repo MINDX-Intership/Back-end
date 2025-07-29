@@ -55,7 +55,7 @@ const timelineController = {
                     startDate: new Date(task.startDate),
                     endDate: new Date(task.endDate),
                     status: task.status || 'PENDING',
-                    assignedTo: task.assignedTo ? mongoose.Types.ObjectId(task.assignedTo) : null,
+                    assignees: task.assignees ? task.assignees.map(id => mongoose.Types.ObjectId(id)) : [],
                     dependencies: task.dependencies || [],
                     milestone: task.milestone || false
                 }));
@@ -104,7 +104,7 @@ const timelineController = {
                     taskId: mongoose.Types.ObjectId(task.taskId),
                     startDate: new Date(task.startDate),
                     endDate: new Date(task.endDate),
-                    assignedTo: task.assignedTo ? mongoose.Types.ObjectId(task.assignedTo) : null
+                    assignees: task.assignees ? task.assignees.map(id => mongoose.Types.ObjectId(id)) : []
                 }));
             }
 
@@ -150,7 +150,7 @@ const timelineController = {
                 // Get tasks from timeline
                 const taskIds = timeline.tasks.map(t => t.taskId);
                 const tasksDetails = await TasksModels.find({ _id: { $in: taskIds } })
-                    .populate('assignedTo', 'name personalEmail')
+                    .populate('assignees', 'name personalEmail')
                     .populate('sprintId', 'title');
 
                 // Merge timeline task info with actual task details
@@ -168,11 +168,11 @@ const timelineController = {
                         progress: this.getProgressByStatus(timelineTask.status),
                         milestone: timelineTask.milestone,
                         dependencies: timelineTask.dependencies,
-                        assignee: taskDetail?.assignedTo ? {
-                            _id: taskDetail.assignedTo._id,
-                            name: taskDetail.assignedTo.name,
-                            personalEmail: taskDetail.assignedTo.personalEmail
-                        } : null,
+                        assignees: taskDetail?.assignees ? taskDetail.assignees.map(assignee => ({
+                            _id: assignee._id,
+                            name: assignee.name,
+                            personalEmail: assignee.personalEmail
+                        })) : [],
                         sprint: taskDetail?.sprintId ? {
                             _id: taskDetail.sprintId._id,
                             title: taskDetail.sprintId.title
