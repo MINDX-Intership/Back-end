@@ -60,22 +60,28 @@ export const authVerify = async (req, res, next) => {
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const account = await AccountsModels.findById(decoded.accountId);
-
         if (!account) {
             return res.status(404).json({ message: 'Không tìm thấy tài khoản.' });
         }
 
-        // Check if account is verified
         if (!account.isVerified) {
             return res.status(403).json({ 
                 message: 'Tài khoản chưa được xác thực email. Vui lòng kiểm tra email để xác thực.',
                 needsVerification: true 
             });
         }
-
         req.account = account;
-        next();
 
+        // Lấy user profile
+        const user = await userModel.findOne({ accountId: account._id });
+        if (!user) {
+            return res.status(404).json({ message: 'Không tìm thấy thông tin người dùng.' });
+        }
+
+        // 
+        req.user = user;
+
+        next();
     } catch (error) {
         if (error.name === 'JsonWebTokenError') {
             return res.status(401).json({ message: 'Token không hợp lệ.' });
@@ -86,6 +92,7 @@ export const authVerify = async (req, res, next) => {
         }
     }
 };
+
 
 export const registerValidate = async (req, res, next) => {
     try {

@@ -1,8 +1,7 @@
 import TaskModel from '../models/Tasks.Models.js';
 import UserModel from '../models/Users.Models.js';
 
-
-// QLTT01: Lấy danh sách tất cả timeline task của mọi người (Admin)
+//  Lấy danh sách tất cả timeline task của mọi người (Admin)
 export const getAllTimelineTasks = async (req, res) => {
     try {
         const tasks = await TaskModel.find().populate('assignedTo', 'fullName email');
@@ -12,34 +11,44 @@ export const getAllTimelineTasks = async (req, res) => {
     }
 };
 
-
-// QLTT01: Thêm timeline task cho người dùng
+//Thêm timeline task
 export const addTimelineTask = async (req, res) => {
     try {
         const { title, description, assignedTo, startDate, endDate } = req.body;
 
-        const user = await UserModel.findById(assignedTo);
-        if (!user) {
-            return res.status(404).json({ success: false, message: 'Người dùng không tồn tại' });
+        if (!assignedTo || !Array.isArray(assignedTo) || assignedTo.length === 0) {
+            return res.status(400).json({ success: false, message: 'Thiếu người được giao task (assignedTo)' });
         }
 
-        const newTask = await TaskModel.create({
-            title,
-            description,
-            assignedTo,
-            startDate,
-            endDate,
-            createdBy: req.user._id,
-        });
+        // Kiểm tra từng userId có tồn tại không
+        for (const userId of assignedTo) {
+            const user = await UserModel.findById(userId);
+            if (!user) {
+                return res.status(404).json({ success: false, message: `Người dùng với ID ${userId} không tồn tại` });
+            }
+        }
 
-        res.status(201).json({ success: true, message: 'Thêm timeline task thành công', data: newTask });
+        // Tạo nhiều task cho các thành viên
+        const createdTasks = await Promise.all(
+            assignedTo.map(userId =>
+                TaskModel.create({
+                    title,
+                    description,
+                    assignedTo: userId,
+                    startDate,
+                    endDate,
+                    createdBy: req.user._id, // Admin tạo
+                })
+            )
+        );
+
+        res.status(201).json({ success: true, message: 'Đã tạo task cho nhóm thành công', data: createdTasks });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Không thể thêm timeline task', error });
     }
 };
 
-
-// QLTT01: Cập nhật timeline task
+// Cập nhật timeline task
 export const updateTimelineTask = async (req, res) => {
     try {
         const { id } = req.params;
@@ -56,8 +65,7 @@ export const updateTimelineTask = async (req, res) => {
     }
 };
 
-
-//  QLTT01: Xóa timeline task
+// Xóa timeline task
 export const deleteTimelineTask = async (req, res) => {
     try {
         const { id } = req.params;
@@ -73,8 +81,7 @@ export const deleteTimelineTask = async (req, res) => {
     }
 };
 
-
-// QLTT02: Lấy timeline task của một người dùng cụ thể
+// Lấy timeline task của một người dùng cụ thể
 export const getTimelineTasksByUser = async (req, res) => {
     try {
         const { userId } = req.params;
