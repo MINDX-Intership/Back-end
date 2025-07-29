@@ -247,8 +247,8 @@ const taskController = {
             if (status) updateData.status = status;
             if (priority) updateData.priority = priority;
             if (duration) updateData.duration = new Date(duration);
-            if (assignees && mongoose.Types.ObjectId.isValid(assignees)) {
-                updateData.assignees = mongoose.Types.ObjectId(assignees);
+            if (assignees && await userModel.findOne({ accountId: assignees })) {
+                updateData.assignees = await userModel.findOne({ accountId: assignees });
             }
 
             const updatedTask = await taskModel.findByIdAndUpdate(
