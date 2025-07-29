@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const sprintSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'Users', required: true }, // người sở hữu sprint
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Users', required: true }, // người sở hữu sprint
   taskId: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tasks' }], // danh sách công việc liên quan
   teamMembers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Users' }], // danh sách thành viên tham gia sprint
   title: { type: String, required: true },            // tên công việc hoặc sprint
@@ -10,8 +10,8 @@ const sprintSchema = new mongoose.Schema({
   endDate: { type: Date, required: true },            // ngày kết thúc
   status: {
     type: String,
-    enum: ['Chưa bắt đầu', 'Đang làm', 'Hoàn thành'],
-    default: 'Chưa bắt đầu'
+    enum: ['NOTSTARTED', 'INPROGRESS', 'COMPLETED'],
+    default: 'NOTSTARTED'
   },
   projectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Projects' }, // liên kết dự án 
   createdAt: { type: Date, default: Date.now },

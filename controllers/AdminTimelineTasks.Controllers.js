@@ -4,7 +4,7 @@ import UserModel from '../models/Users.Models.js';
 //  Lấy danh sách tất cả timeline task của mọi người (Admin)
 export const getAllTimelineTasks = async (req, res) => {
     try {
-        const tasks = await TaskModel.find().populate('assignedTo', 'fullName email');
+        const tasks = await TaskModel.find().populate('assignees', 'fullName email');
         res.status(200).json({ success: true, data: tasks });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Lỗi khi lấy danh sách timeline tasks', error });
@@ -14,19 +14,21 @@ export const getAllTimelineTasks = async (req, res) => {
 //Thêm timeline task
 export const addTimelineTask = async (req, res) => {
     try {
-        const { title, description, assignedTo, startDate, endDate } = req.body;
+        const { title, description, assignees, startDate, endDate } = req.body;
 
-        if (!assignedTo || !Array.isArray(assignedTo) || assignedTo.length === 0) {
-            return res.status(400).json({ success: false, message: 'Thiếu người được giao task (assignedTo)' });
+        const users = await UserModel.find({ _id: { $in: assignees } });
+        if (users.length === 0) {
+            return res.status(404).json({ success: false, message: 'Người dùng không tồn tại' });
         }
 
-        // Kiểm tra từng userId có tồn tại không
-        for (const userId of assignedTo) {
-            const user = await UserModel.findById(userId);
-            if (!user) {
-                return res.status(404).json({ success: false, message: `Người dùng với ID ${userId} không tồn tại` });
-            }
-        }
+        const newTask = await TaskModel.create({
+            title,
+            description,
+            assignees,
+            startDate,
+            endDate,
+            createdBy: req.user._id,
+        });
 
         // Tạo nhiều task cho các thành viên
         const createdTasks = await Promise.all(
@@ -91,7 +93,7 @@ export const getTimelineTasksByUser = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Người dùng không tồn tại' });
         }
 
-        const tasks = await TaskModel.find({ assignedTo: userId }).populate('assignedTo', 'fullName email');
+        const tasks = await TaskModel.find({ assignedTo: userId }).populate('assignees', 'fullName email');
 
         res.status(200).json({ success: true, data: tasks });
     } catch (error) {
