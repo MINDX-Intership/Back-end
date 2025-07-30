@@ -7,6 +7,8 @@ import notificationRouter from './Notifications.Routes.js';
 import documentRouter from './Documents.Routes.js';
 import projectRouter from './Projects.Routes.js';
 import supportRequestRouter from './SupportRequests.Routes.js';
+import supportResponseRouter from './SupportResponse.Routes.js';
+import incidentRouter from './Incident.Routes.js'
 import googleCalendarRouter from './GoogleCalendar.Routes.js';  
 import jobPositionRouter from './JobPositions.Routes.js';
 import departRouter from './Departs.Routes.js';
@@ -35,5 +37,7 @@ router.use('/admin/access-control', adminAccessControlRouter);
 router.use('/reports', reportRouter);
 router.use('/timelines', timelineRouter);
 router.use('/personal-management', personalManagementRouter);
+router.use('/supports', supportResponseRouter);
+router.use('/incidents', incidentRouter); 
 
 export default router;
