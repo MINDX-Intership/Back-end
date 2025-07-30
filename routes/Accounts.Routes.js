@@ -4,7 +4,7 @@ import { registerValidate, validateLogin, requireUserAdmin, authenticateToken } 
 
 const accountRouter = express.Router();
 
-accountRouter.post('/register', registerValidate, requireUserAdmin, accountController.register);       // Đăng ký tài khoản
+accountRouter.post('/register', authenticateToken, registerValidate, requireUserAdmin, accountController.register);       // Đăng ký tài khoản
 accountRouter.post('/send-verification', accountController.verifyEmail);            // Gửi email xác thực
 accountRouter.get('/verify-email/:token', accountController.verifyAccount); // Xác thực email từ link
 accountRouter.post('/login', validateLogin, accountController.login);             // Đăng nhập
