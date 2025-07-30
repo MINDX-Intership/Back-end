@@ -251,6 +251,29 @@ export const requireUserAdmin = async (req, res, next) => {
     }
 };
 
+// Kiểm tra nếu user là LEADER hoặc ADMIN (dựa vào user.roleTag)
+export const requireLeaderOrAdmin = async (req, res, next) => {
+    try {
+        if (!req.account) {
+            return res.status(401).json({ message: 'Truy cập bị từ chối. Vui lòng đăng nhập.' });
+        }
+
+        const user = req.user || await userModel.findOne({ accountId: req.account._id });
+        if (!user) {
+            return res.status(404).json({ message: 'Không tìm thấy thông tin người dùng.' });
+        }
+
+        if (!['LEADER', 'ADMIN'].includes(user.roleTag)) {
+            return res.status(403).json({ message: 'Chỉ LEADER hoặc ADMIN mới được phép thực hiện thao tác này.' });
+        }
+
+        req.user = user; // Gán lại để chắc chắn controller dùng được
+        next();
+    } catch (error) {
+        res.status(500).json({ message: 'Lỗi server nội bộ.', error: error.message });
+    }
+};
+
 // For routes that need authentication but allow unverified accounts
 export const authOnly = [authenticateToken];
 

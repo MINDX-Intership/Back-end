@@ -17,4 +17,5 @@ const SupportResponseSchema = new mongoose.Schema({
   responseMessage: { type: String },
 });
 
-export default mongoose.model('SupportResponse', SupportResponseSchema);
+const supportResponseModel = mongoose.model('SupportResponse', SupportResponseSchema);
+export default supportResponseModel;

@@ -1,22 +1,20 @@
-router.patch('/:id', authVerify, requireLeaderOrAdmin, handleSupportRequest);
 import express from 'express';
-import {
-  createSupportResponse,
-  getAllSupportResponses,
-  handleSupportResponse,
-} from '../controllers/SupportResponse.Controller.js';
-
+import supportResponseController from '../controllers/SupportRespone.Controller.js';
 import { authVerify, requireLeaderOrAdmin } from '../middlewares/Auth.Middlewares.js';
 
-const router = express.Router();
+const supportResponseRouter = express.Router();
 
-// MEMBER gửi yêu cầu
-router.post('/', authVerify, createSupportResponse);
+// supportResponseRouter.patch('/:id', authVerify, requireLeaderOrAdmin, supportResponseController.handleSupportRequest);
 
-// LEADER/ADMIN xem tất cả yêu cầu
-router.get('/', authVerify, requireLeaderOrAdmin, getAllSupportResponses);
+// // MEMBER gửi yêu cầu
+// supportResponseRouter.post('/', authVerify, supportResponseController.createSupportResponse);
 
-// LEADER/ADMIN xử lý yêu cầu
-router.patch('/:id', authVerify, requireLeaderOrAdmin, handleSupportResponse);
+// // LEADER/ADMIN xem tất cả yêu cầu
+// supportResponseRouter.get('/', authVerify, requireLeaderOrAdmin, supportResponseController.getAllSupportResponses);
 
-export default router;
+// // LEADER/ADMIN xử lý yêu cầu
+// supportResponseRouter.patch('/:id', authVerify, requireLeaderOrAdmin, supportResponseController.handleSupportResponse);
+
+supportResponseRouter.post('/', authVerify, requireLeaderOrAdmin, supportResponseController.createSupportResponse); // MEMBER gửi yêu cầu hỗ trợ
+
+export default supportResponseRouter;
