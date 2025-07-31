@@ -179,7 +179,6 @@ const sprintController = {
             res.status(500).json({ message: "Lỗi khi lấy danh sách sprint", error: err.message });
         }
     },
-
     getSprintById: async (req, res) => {
         try {
             const { id } = req.params;
@@ -216,7 +215,37 @@ const sprintController = {
             res.status(500).json({ message: "Lỗi khi lấy thông tin sprint", error: err.message });
         }
     },
+    getSprintsByStaffId: async (req, res) => {
+        try {
+            const { staffId } = req.params
+            const { page = 1, limit = 10 } = req.query;
+            const userProfile = await userModel.findOne({ accountId: req.account._id });
+            if (!userProfile) {
+                return res.status(404).json({ message: "Không tìm thấy profile người dùng." });
+            }
 
+            const sprints = await sprintModel.find({ user: staffId })
+                .populate('user', 'name personalEmail')
+                .populate('projectId', 'title')
+                .sort({ createdAt: -1 })
+                .skip((page - 1) * limit)
+                .limit(parseInt(limit));
+            const total = await sprintModel.countDocuments({ user: staffId });
+            res.status(200).json({
+                message: "Lấy danh sách sprint của nhân viên thành công",
+                sprints,
+                pagination: {
+                    page: parseInt(page),
+                    limit: parseInt(limit),
+                    total,
+                    pages: Math.ceil(total / limit)
+                }
+            });
+        } catch (error) {
+            console.error('❌ Get sprints by staff ID error:', error);
+            res.status(500).json({ message: "Lỗi khi lấy danh sách sprint của nhân viên", error: error.message });
+        }
+    },
     updateSprint: async (req, res) => {
         try {
             const { id } = req.params;

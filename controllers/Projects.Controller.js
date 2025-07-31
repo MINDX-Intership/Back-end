@@ -182,6 +182,28 @@ const projectController = {
       res.status(500).json({ message: 'Lỗi khi thêm người dùng vào dự án', error: error.message });
     }
   },
+  getAllMembersInProject: async (req, res) => {
+    const { projectId } = req.params;
+
+    try {
+      const project = await projectModel.findById(projectId).populate('teamMembers', 'name email role');
+      if (!project) {
+        return res.status(404).json({ message: 'Không tìm thấy dự án' });
+      }
+
+      res.status(200).json({
+        message: 'Lấy danh sách thành viên dự án thành công',
+        members: project.teamMembers.map(member => ({
+          id: member._id,
+          name: member.name,
+          email: member.email,
+          role: member.role
+        }))
+      });
+    } catch (error) {
+      res.status(500).json({ message: 'Lỗi khi lấy danh sách thành viên dự án', error: error.message });
+    }
+  },
   deleteProject: async (req, res) => {
     const { projectId } = req.params;
     try {

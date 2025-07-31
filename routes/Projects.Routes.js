@@ -10,6 +10,7 @@ projectRouter.post('/add-user/:projectid', authVerify, requireUserAdmin, project
 projectRouter.delete('/delete/:projectId', authVerify, requireUserAdmin, projectController.deleteProject); // Xóa dự án
 projectRouter.get('/all', authVerify, projectController.getAllProjects); // Lấy danh sách dự án
 projectRouter.get('/:projectId', authVerify, projectController.getProjectById); // Lấy thông tin dự án theo ID
+projectRouter.get('/:projectId/members', authVerify, projectController.getAllMembersInProject); // Lấy danh sách thành viên dự án
 projectRouter.get('/progress/:projectId', authVerify, projectController.getProjectReport); // Lấy tiến độ dự án
 
 export default projectRouter;
