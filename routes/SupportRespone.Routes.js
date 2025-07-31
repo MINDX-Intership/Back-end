@@ -4,16 +4,11 @@ import { authVerify, requireLeaderOrAdmin } from '../middlewares/Auth.Middleware
 
 const supportResponseRouter = express.Router();
 
-// supportResponseRouter.patch('/:id', authVerify, requireLeaderOrAdmin, supportResponseController.handleSupportRequest);
+// LEADER/ADMIN xem tất cả yêu cầu
+supportResponseRouter.get('/', authVerify, requireLeaderOrAdmin, supportResponseController.getAllSupportResponses);
 
-// // MEMBER gửi yêu cầu
-// supportResponseRouter.post('/', authVerify, supportResponseController.createSupportResponse);
-
-// // LEADER/ADMIN xem tất cả yêu cầu
-// supportResponseRouter.get('/', authVerify, requireLeaderOrAdmin, supportResponseController.getAllSupportResponses);
-
-// // LEADER/ADMIN xử lý yêu cầu
-// supportResponseRouter.patch('/:id', authVerify, requireLeaderOrAdmin, supportResponseController.handleSupportResponse);
+// LEADER/ADMIN xử lý yêu cầu
+supportResponseRouter.patch('/:id', authVerify, requireLeaderOrAdmin, supportResponseController.handleSupportResponse);
 
 supportResponseRouter.post('/', authVerify, requireLeaderOrAdmin, supportResponseController.createSupportResponse); // MEMBER gửi yêu cầu hỗ trợ
 

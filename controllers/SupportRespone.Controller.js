@@ -1,19 +1,4 @@
-// MEMBER gửi yêu cầu hỗ trợ
-// export const createSupportResponse = async (req, res) => {
-//   try {
-//     const { title, description } = req.body;
-//     const newResponse = new supportResponseModel({
-//       title,
-//       description,
-//       createdBy: req.user._id,
-//     });
 
-//     await newResponse.save();
-//     res.status(201).json({ message: 'Yêu cầu hỗ trợ đã được tạo', response: newResponse });
-//   } catch (err) {
-//     res.status(500).json({ message: 'Lỗi máy chủ' });
-//   }
-// };
 
 // //  LEADER/ADMIN xem tất cả yêu cầu hỗ trợ
 // export const getAllSupportResponses = async (req, res) => {
@@ -30,28 +15,34 @@
 // };
 
 // // LEADER/ADMIN xử lý yêu cầu hỗ trợ
-// export const handleSupportResponse = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const { status, responseMessage } = req.body;
+export const handleSupportResponse = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, responseMessage } = req.body;
 
-//     const response = await supportResponseModel.findById(id);
-//     if (!response) {
-//       return res.status(404).json({ message: 'Không tìm thấy yêu cầu hỗ trợ' });
-//     }
+    const response = await SupportResponse.findById(id);
+    if (!response) {
+      return res.status(404).json({ message: 'Không tìm thấy yêu cầu hỗ trợ' });
+    }
 
-//     response.status = status || 'đang xử lí';
-//     response.responseMessage = responseMessage;
-//     response.handledBy = req.user._id;
-//     response.handledAt = new Date();
+    response.status = status || 'đang xử lí';
+    response.responseMessage = responseMessage;
+    response.handledBy = req.user._id;
+    response.handledAt = new Date();
 
-//     await response.save();
+    // Nếu có responseMessage và handledBy thì cập nhật là đã xử lý
+    if (response.responseMessage && response.handledBy) {
+      response.status = 'đã xử lý';
+    }
 
-//     res.status(200).json({ message: 'Đã cập nhật yêu cầu hỗ trợ', response });
-//   } catch (err) {
-//     res.status(500).json({ message: 'Lỗi máy chủ' });
-//   }
-// };
+    await response.save();
+
+    res.status(200).json({ message: 'Đã cập nhật yêu cầu hỗ trợ', response });
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi máy chủ' });
+  }
+};
+
 
 import supportResponseModel from "../models/SupportRespone.Models.js";
 
