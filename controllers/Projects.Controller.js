@@ -182,6 +182,28 @@ const projectController = {
       res.status(500).json({ message: 'Lỗi khi thêm người dùng vào dự án', error: error.message });
     }
   },
+  addSprintToProject: async (req, res) => {
+    const { projectId } = req.params;
+    const { sprintId } = req.body;
+
+    try {
+      const project = await projectModel.findById(projectId);
+      if (!project) {
+        return res.status(404).json({ message: 'Không tìm thấy dự án' });
+      }
+
+      if (project.sprintId.includes(sprintId)) {
+        return res.status(400).json({ message: 'Sprint đã được thêm vào dự án' });
+      }
+
+      project.sprintId.push(sprintId);
+      await project.save();
+
+      res.status(200).json({ message: 'Thêm sprint vào dự án thành công', project });
+    } catch (error) {
+      res.status(500).json({ message: 'Lỗi khi thêm sprint vào dự án', error: error.message });
+    }
+  },
   getAllMembersInProject: async (req, res) => {
     const { projectId } = req.params;
 
