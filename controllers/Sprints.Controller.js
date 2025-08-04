@@ -181,13 +181,13 @@ const sprintController = {
     },
     getSprintById: async (req, res) => {
         try {
-            const { id } = req.params;
+            const { sprintId } = req.params;
 
-            if (!mongoose.Types.ObjectId.isValid(id)) {
+            if (!mongoose.Types.ObjectId.isValid(sprintId)) {
                 return res.status(400).json({ message: "ID sprint không hợp lệ." });
             }
 
-            const sprint = await sprintModel.findById(id)
+            const sprint = await sprintModel.findById(sprintId)
                 .populate('user', 'name personalEmail')
                 .populate('projectId', 'title');
 
@@ -248,10 +248,10 @@ const sprintController = {
     },
     updateSprint: async (req, res) => {
         try {
-            const { id } = req.params;
+            const { sprintId } = req.params;
             const { title, description, startDate, endDate, status } = req.body;
 
-            if (!mongoose.Types.ObjectId.isValid(id)) {
+            if (!mongoose.Types.ObjectId.isValid(sprintId)) {
                 return res.status(400).json({ message: "ID sprint không hợp lệ." });
             }
 
@@ -339,13 +339,13 @@ const sprintController = {
     },
     completeSprint: async (req, res) => {
         try {
-            const { id } = req.params;
+            const { sprintId } = req.params;
 
-            if (!mongoose.Types.ObjectId.isValid(id)) {
+            if (!mongoose.Types.ObjectId.isValid(sprintId)) {
                 return res.status(400).json({ message: "ID sprint không hợp lệ." });
             }
 
-            const sprint = await sprintModel.findById(id);
+            const sprint = await sprintModel.findById(sprintId);
             if (!sprint) {
                 return res.status(404).json({ message: "Sprint không tồn tại." });
             }
@@ -386,13 +386,13 @@ const sprintController = {
 
     deleteSprint: async (req, res) => {
         try {
-            const { id } = req.params;
+            const { sprintId } = req.params;
 
-            if (!mongoose.Types.ObjectId.isValid(id)) {
+            if (!mongoose.Types.ObjectId.isValid(sprintId)) {
                 return res.status(400).json({ message: "ID sprint không hợp lệ." });
             }
 
-            const sprint = await sprintModel.findById(id);
+            const sprint = await sprintModel.findById(sprintId);
             if (!sprint) {
                 return res.status(404).json({ message: "Sprint không tồn tại." });
             }

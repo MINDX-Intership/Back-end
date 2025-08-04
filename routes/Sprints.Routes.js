@@ -6,10 +6,10 @@ const sprintRouter = express.Router();
 
 sprintRouter.post('/add', authVerify, requireUserAdmin, sprintController.createSprint);             // Thêm sprint
 sprintRouter.get('/all', authVerify, sprintController.getSprint);          // Lấy danh sách sprint
-sprintRouter.get('/:id', authVerify, requireUserAdmin, sprintController.getSprintById); // Lấy thông tin sprint theo ID
+sprintRouter.get('/:sprintId', authVerify, requireUserAdmin, sprintController.getSprintById); // Lấy thông tin sprint theo ID
 // sprintRouter.get('/:userId', authVerify, sprintController.getSprintsByStaffId); // Lấy danh sách sprint theo staff ID
-sprintRouter.put('/:id', authVerify, requireUserAdmin, sprintController.updateSprint); // Cập nhật sprint
-sprintRouter.put('/complete/:id', authVerify, requireUserAdmin, sprintController.completeSprint); // Hoàn thành sprint
-sprintRouter.delete('/:id', authVerify, requireUserAdmin, sprintController.deleteSprint); // Xóa sprint
+sprintRouter.put('/:sprintId', authVerify, requireUserAdmin, sprintController.updateSprint); // Cập nhật sprint
+sprintRouter.put('/complete/:sprintId', authVerify, requireUserAdmin, sprintController.completeSprint); // Hoàn thành sprint
+sprintRouter.delete('/:sprintId', authVerify, requireUserAdmin, sprintController.deleteSprint); // Xóa sprint
 
 export default sprintRouter;

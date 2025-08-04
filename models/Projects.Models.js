@@ -8,7 +8,6 @@ const projectSchema = new mongoose.Schema({
     endDate: { type: Date, required: true },
     teamMembers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Users' }],
     sprintId: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Sprints' }], // danh sách sprint liên quan
-    // tasksId: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tasks' }], // danh sách công việc liên quan
 })
 
 const projectModel = mongoose.model('Projects', projectSchema);
