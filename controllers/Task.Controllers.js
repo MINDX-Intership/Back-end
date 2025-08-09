@@ -9,7 +9,6 @@ const taskController = {
         try {
             const { departId, sprintId, title, description, priority, assignees, duration, startDate, endDate, estimatedHours } = req.body;
 
-            // Validate required fields
             if (!departId || !title) {
                 return res.status(400).json({ message: "Vui lòng điền đầy đủ thông tin: departId, title." });
             }
@@ -25,7 +24,6 @@ const taskController = {
                 if (!mongoose.Types.ObjectId.isValid(sprintId)) {
                     return res.status(400).json({ message: "ID sprint không hợp lệ." });
                 }
-
                 const sprint = await sprintModel.findById(sprintId);
                 if (!sprint) {
                     return res.status(404).json({ message: "Sprint không tồn tại." });
@@ -36,30 +34,31 @@ const taskController = {
             let processedAssignees = [];
             if (assignees) {
                 if (Array.isArray(assignees)) {
-                    // Multiple assignees
                     for (const assigneeId of assignees) {
                         if (!mongoose.Types.ObjectId.isValid(assigneeId)) {
                             return res.status(400).json({ message: `ID người được giao việc không hợp lệ: ${assigneeId}` });
                         }
-                        
                         const assignee = await userModel.findById(assigneeId);
                         if (!assignee) {
                             return res.status(404).json({ message: `Không tìm thấy người dùng với ID: ${assigneeId}` });
                         }
-                        
+                        // 🚫 Staff cannot assign tasks to leaders/admins
+                        if (req.account.role === 'STAFF' && ['ADMIN', 'LEADER'].includes(assignee.role)) {
+                            return res.status(403).json({ message: "Nhân viên không thể giao việc cho quản trị viên hoặc trưởng nhóm." });
+                        }
                         processedAssignees.push(assigneeId);
                     }
                 } else {
-                    // Single assignee
                     if (!mongoose.Types.ObjectId.isValid(assignees)) {
                         return res.status(400).json({ message: "ID người được giao việc không hợp lệ." });
                     }
-                    
                     const assignee = await userModel.findById(assignees);
                     if (!assignee) {
                         return res.status(404).json({ message: "Không tìm thấy người được giao việc." });
                     }
-                    
+                    if (req.account.role === 'STAFF' && ['ADMIN', 'LEADER'].includes(assignee.role)) {
+                        return res.status(403).json({ message: "Nhân viên không thể giao việc cho quản trị viên hoặc trưởng nhóm." });
+                    }
                     processedAssignees.push(assignees);
                 }
             } else {
@@ -67,12 +66,21 @@ const taskController = {
                 processedAssignees.push(userProfile._id);
             }
 
-            // Validate dates
+            // Staff can only assign to themselves or other staff
+            if (req.account.role === 'STAFF') {
+                // Check if all assignees are staff or self
+                for (const assigneeId of processedAssignees) {
+                    const assignee = await userModel.findById(assigneeId);
+                    if (['ADMIN', 'LEADER'].includes(assignee.role)) {
+                        return res.status(403).json({ message: "Nhân viên chỉ có thể giao việc cho nhân viên khác hoặc bản thân." });
+                    }
+                }
+            }
+
             if (startDate && endDate && new Date(startDate) >= new Date(endDate)) {
                 return res.status(400).json({ message: "Ngày bắt đầu phải trước ngày kết thúc." });
             }
 
-            // Create task data
             const taskData = {
                 departId,
                 sprintId,
@@ -91,7 +99,6 @@ const taskController = {
 
             const newTask = await taskModel.create(taskData);
 
-            // Populate the created task for response
             const populatedTask = await taskModel.findById(newTask._id)
                 .populate('createdBy', 'name personalEmail')
                 .populate('assignees', 'name personalEmail')
@@ -141,7 +148,7 @@ const taskController = {
 
             const tasks = await taskModel.find(filter)
                 .populate('createdBy', 'name personalEmail')
-                .populate('assignees', 'name personalEmail') 
+                .populate('assignees', 'name personalEmail')
                 .populate('sprintId', 'title status startDate endDate')
                 .populate('departId', 'name')
                 .sort({ createdAt: -1 })
@@ -251,9 +258,9 @@ const taskController = {
 
             // Check permission - fixed to check assignees array
             const isAssigned = task.assignees.some(assignee => assignee._id.equals(userProfile._id));
-            const canView = req.account.role === 'ADMIN' || 
-                           task.createdBy._id.equals(userProfile._id) ||
-                           isAssigned;
+            const canView = req.account.role === 'ADMIN' ||
+                task.createdBy._id.equals(userProfile._id) ||
+                isAssigned;
 
             if (!canView) {
                 return res.status(403).json({ message: "Bạn không có quyền xem task này." });
@@ -312,19 +319,19 @@ const taskController = {
             // Handle assignees update
             if (assignees) {
                 let processedAssignees = [];
-                
+
                 if (Array.isArray(assignees)) {
                     // Multiple assignees
                     for (const assigneeId of assignees) {
                         if (!mongoose.Types.ObjectId.isValid(assigneeId)) {
                             return res.status(400).json({ message: `ID người được giao việc không hợp lệ: ${assigneeId}` });
                         }
-                        
+
                         const assignee = await userModel.findById(assigneeId);
                         if (!assignee) {
                             return res.status(404).json({ message: `Không tìm thấy người dùng với ID: ${assigneeId}` });
                         }
-                        
+
                         processedAssignees.push(assigneeId);
                     }
                 } else {
@@ -332,15 +339,15 @@ const taskController = {
                     if (!mongoose.Types.ObjectId.isValid(assignees)) {
                         return res.status(400).json({ message: "ID người được giao việc không hợp lệ." });
                     }
-                    
+
                     const assignee = await userModel.findById(assignees);
                     if (!assignee) {
                         return res.status(404).json({ message: "Không tìm thấy người được giao việc." });
                     }
-                    
+
                     processedAssignees.push(assignees);
                 }
-                
+
                 updateData.assignees = processedAssignees;
             }
 
@@ -354,13 +361,13 @@ const taskController = {
                 updateData,
                 { new: true, runValidators: true }
             ).populate('createdBy', 'name personalEmail')
-             .populate('assignees', 'name personalEmail')
-             .populate('sprintId', 'title status startDate endDate')
-             .populate('departId', 'name');
+                .populate('assignees', 'name personalEmail')
+                .populate('sprintId', 'title status startDate endDate')
+                .populate('departId', 'name');
 
-            res.status(200).json({ 
-                message: "Cập nhật công việc thành công", 
-                task: updatedTask 
+            res.status(200).json({
+                message: "Cập nhật công việc thành công",
+                task: updatedTask
             });
         } catch (err) {
             console.error('❌ Update task error:', err);
@@ -397,7 +404,7 @@ const taskController = {
 
             await taskModel.findByIdAndDelete(taskId);
 
-            res.status(200).json({ 
+            res.status(200).json({
                 message: "Xóa công việc thành công",
                 deletedTask: {
                     id: task._id,
@@ -450,8 +457,8 @@ const taskController = {
                 },
                 { new: true }
             ).populate('createdBy', 'name personalEmail')
-             .populate('assignees', 'name personalEmail')
-             .populate('submission.submittedBy', 'name personalEmail');
+                .populate('assignees', 'name personalEmail')
+                .populate('submission.submittedBy', 'name personalEmail');
 
             res.status(200).json({
                 message: "Nộp bài thành công",
