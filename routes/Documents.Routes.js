@@ -6,7 +6,8 @@ import {
   createDocument,
   updateDocument,
   deleteDocument,
-  getMyDocuments
+  getMyDocuments,
+  uploadDocumentFile // Thêm hàm uploadDocumentFile
 } from '../controllers/Documents.Controller.js';
 
 const router = express.Router();
@@ -30,13 +31,12 @@ router.put('/:id', authVerify, updateDocument);       // Sửa tài liệu
 router.delete('/:id', authVerify, deleteDocument);    // Xóa tài liệu
 router.get('/', authVerify, getMyDocuments);          // Quản lý danh sách
 
-// ROUTE UPLOAD FILE
-router.post('/upload', authVerify, upload.single('file'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ message: 'No file uploaded' });
-  }
-  const fileUrl = `/uploads/documents/${req.file.filename}`;
-  res.status(200).json({ fileUrl });
-});
+// ROUTE UPLOAD FILE 
+router.post(
+  '/upload',
+  authVerify,
+  upload.single('file'),
+  uploadDocumentFile // Gọi controller để lưu vào MongoDB
+);
 
 export default router;
