@@ -42,8 +42,8 @@ const taskController = {
                         if (!assignee) {
                             return res.status(404).json({ message: `Không tìm thấy người dùng với ID: ${assigneeId}` });
                         }
-                        // 🚫 Staff cannot assign tasks to leaders/admins
-                        if (req.account.role === 'STAFF' && ['ADMIN', 'LEADER'].includes(assignee.role)) {
+                        // 🚫 MEMBER cannot assign tasks to leaders/admins
+                        if (req.account.roleTag === 'MEMBER' && ['ADMIN', 'LEADER'].includes(assignee.roleTag)) {
                             return res.status(403).json({ message: "Nhân viên không thể giao việc cho quản trị viên hoặc trưởng nhóm." });
                         }
                         processedAssignees.push(assigneeId);
@@ -56,7 +56,7 @@ const taskController = {
                     if (!assignee) {
                         return res.status(404).json({ message: "Không tìm thấy người được giao việc." });
                     }
-                    if (req.account.role === 'STAFF' && ['ADMIN', 'LEADER'].includes(assignee.role)) {
+                    if (req.account.roleTag === 'MEMBER' && ['ADMIN', 'LEADER'].includes(assignee.roleTag)) {
                         return res.status(403).json({ message: "Nhân viên không thể giao việc cho quản trị viên hoặc trưởng nhóm." });
                     }
                     processedAssignees.push(assignees);
@@ -66,19 +66,15 @@ const taskController = {
                 processedAssignees.push(userProfile._id);
             }
 
-            // Staff can only assign to themselves or other staff
-            if (req.account.role === 'STAFF') {
-                // Check if all assignees are staff or self
+            // MEMBER can only assign to themselves or other MEMBER
+            if (req.account.role === 'MEMBER') {
+                // Check if all assignees are MEMBER or self
                 for (const assigneeId of processedAssignees) {
                     const assignee = await userModel.findById(assigneeId);
-                    if (['ADMIN', 'LEADER'].includes(assignee.role)) {
+                    if (['ADMIN', 'LEADER'].includes(assignee.roleTag)) {
                         return res.status(403).json({ message: "Nhân viên chỉ có thể giao việc cho nhân viên khác hoặc bản thân." });
                     }
                 }
-            }
-
-            if (startDate && endDate && new Date(startDate) >= new Date(endDate)) {
-                return res.status(400).json({ message: "Ngày bắt đầu phải trước ngày kết thúc." });
             }
 
             const taskData = {
