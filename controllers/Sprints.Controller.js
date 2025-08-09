@@ -322,7 +322,7 @@ const sprintController = {
             if (status) updateData.status = status;
 
             const updatedSprint = await sprintModel.findByIdAndUpdate(
-                id,
+                sprintId,
                 updateData,
                 { new: true, runValidators: true }
             ).populate('user', 'name personalEmail')
@@ -420,7 +420,7 @@ const sprintController = {
                 });
             }
 
-            await sprintModel.findByIdAndDelete(id);
+            await sprintModel.findByIdAndDelete(sprintId);
             
             res.status(200).json({ 
                 message: "Xóa sprint thành công.",

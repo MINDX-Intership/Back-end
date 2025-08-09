@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 
 const accountSchema = new mongoose.Schema({
-  socketId: { type: String },
   email: { type: String, required: true, unique: true },        // email tài khoản
   password: { type: String, required: true },                   // mật khẩu đã mã hóa
   role: { type: String, enum: ['ADMIN', 'STAFF'], default: 'STAFF' }, // vai trò

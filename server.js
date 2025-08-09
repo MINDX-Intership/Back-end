@@ -1,13 +1,13 @@
 import express from 'express';
-import http from 'http';
+// import http from 'http';
 import mongoose from 'mongoose';
 import 'dotenv/config'
 import cors from 'cors';
 import rootRouter from './routes/index.js';
 import { Server } from 'socket.io';
 import { fileURLToPath } from 'url';
-
 import path from 'path';
+
 // import socketController from './controllers/Socket.Controllers.js';
 
 const app = express();
@@ -17,7 +17,7 @@ const __dirname = path.dirname(__filename);
 
 const corsOptions = {
   origin: process.env.CLIENT_URL,
-  methods: ['GET', 'POST', 'PUT', 'DELETE','PATCH'], // Các phương thức HTTP được phép
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], // Các phương thức HTTP được phép
   allowedHeaders: ['Content-Type', 'Authorization'], // Các header được phép
   accessControlAllowCredentials: true, // Cho phép cookie và thông tin xác thực
 }
@@ -38,6 +38,12 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
 app.use('/api', rootRouter);
+app.get('/api', (req, res) => {
+  res.json({
+    message: 'API is working',
+    timestamp: new Date()
+  });
+})
 
 // app.get('/health', (req, res) => {
 //   res.json({
