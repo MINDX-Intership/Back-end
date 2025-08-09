@@ -50,6 +50,7 @@ const sprintController = {
             if (end <= start) {
                 return res.status(400).json({ 
                     message: "Ngày kết thúc phải sau ngày bắt đầu.",
+                    description: description ? description : "",
                     startDate,
                     endDate
                 });
