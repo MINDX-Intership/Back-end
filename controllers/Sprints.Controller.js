@@ -219,18 +219,16 @@ const sprintController = {
         try {
             const { staffId } = req.params
             const { page = 1, limit = 10 } = req.query;
-            const userProfile = await userModel.findOne({ accountId: req.account._id });
+            const userProfile = await userModel.findOne({ userId: req.account.staffId });
             if (!userProfile) {
                 return res.status(404).json({ message: "Không tìm thấy profile người dùng." });
             }
 
-            const sprints = await sprintModel.find({ user: staffId })
-                .populate('user', 'name personalEmail')
-                .populate('projectId', 'title')
+            const sprints = await sprintModel.find({ createdBy: staffId })
                 .sort({ createdAt: -1 })
                 .skip((page - 1) * limit)
                 .limit(parseInt(limit));
-            const total = await sprintModel.countDocuments({ user: staffId });
+            const total = await sprintModel.countDocuments({ createdBy: staffId });
             res.status(200).json({
                 message: "Lấy danh sách sprint của nhân viên thành công",
                 sprints,
@@ -255,7 +253,7 @@ const sprintController = {
                 return res.status(400).json({ message: "ID sprint không hợp lệ." });
             }
 
-            const sprint = await sprintModel.findById(id);
+            const sprint = await sprintModel.findById(sprintId);
             if (!sprint) {
                 return res.status(404).json({ message: "Sprint không tồn tại." });
             }
@@ -370,7 +368,7 @@ const sprintController = {
             sprint.status = 'Hoàn thành';
             await sprint.save();
 
-            const populatedSprint = await sprintModel.findById(id)
+            const populatedSprint = await sprintModel.findById(sprintId)
                 .populate('user', 'name personalEmail')
                 .populate('projectId', 'title');
 
