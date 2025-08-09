@@ -33,6 +33,12 @@ app.use(cors(corsOptions));
 
 // Routes
 app.use('/api', rootRouter);
+app.get('/api', (req, res) => {
+  res.json({
+    message: 'API is working',
+    timestamp: new Date()
+  });
+})
 
 // app.get('/health', (req, res) => {
 //   res.json({
