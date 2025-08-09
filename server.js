@@ -5,21 +5,26 @@ import 'dotenv/config'
 import cors from 'cors';
 import rootRouter from './routes/index.js';
 import { Server } from 'socket.io';
+import { fileURLToPath } from 'url';
+
+import path from 'path';
 // import socketController from './controllers/Socket.Controllers.js';
 
 const app = express();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 // const server = http.createServer(app);
 
 const corsOptions = {
   origin: process.env.CLIENT_URL,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Các phương thức HTTP được phép
+  methods: ['GET', 'POST', 'PUT', 'DELETE','PATCH'], // Các phương thức HTTP được phép
   allowedHeaders: ['Content-Type', 'Authorization'], // Các header được phép
   accessControlAllowCredentials: true, // Cho phép cookie và thông tin xác thực
 }
 
 app.use(express.json());
 app.use(cors(corsOptions));
-
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // const io = new Server(server, {
 //   cors: corsOptions,
 //   pingTimeout: 60000,
@@ -53,8 +58,9 @@ app.use('/api', rootRouter);
 //   });
 // });
 
+
 // Kết nối MongoDB và chạy server
-mongoose.connect(process.env.MONGODB_URI)
+mongoose.connect(process.env.MONGODB_URI|| 'mongodb+srv://Khoitran:jun2972007@cluster0.zdx8qrv.mongodb.net/Intern')
   .then(() => {
     app.listen(process.env.PORT, () => {
       console.log(`🚀 Server chạy ở http://localhost:${process.env.PORT}`);

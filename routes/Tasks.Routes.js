@@ -5,7 +5,7 @@ import { authVerify, requireUserLeader } from '../middlewares/Auth.Middlewares.j
 const taskRouter = express.Router();
 
 // Task CRUD operations
-taskRouter.post('/create', authVerify, requireUserLeader, taskController.createTask);          // Tạo task mới (Admin/Leader only)
+taskRouter.post('/create', authVerify,  taskController.createTask);          // Tạo task mới (Admin/Leader only)
 taskRouter.get('/all', authVerify, taskController.getAllTasks);                                // Lấy tất cả task 
 taskRouter.get('/my-tasks', authVerify, taskController.getMyTasks);                            // Lấy task cá nhân
 taskRouter.get('/:taskId', authVerify, taskController.getTaskById);                            // Lấy task theo ID
