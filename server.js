@@ -1,10 +1,10 @@
 import express from 'express';
-import http from 'http';
+// import http from 'http';
 import mongoose from 'mongoose';
 import 'dotenv/config'
 import cors from 'cors';
 import rootRouter from './routes/index.js';
-import { Server } from 'socket.io';
+// import { Server } from 'socket.io';
 // import socketController from './controllers/Socket.Controllers.js';
 
 const app = express();
